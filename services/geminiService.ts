@@ -221,43 +221,52 @@ export const generateImage = async (params: {
   throw new Error("No image data returned from Gemini");
 };
 
-export const generateVideo = async (params: {
-  prompt: string;
-  aspectRatio: '16:9' | '9:16';
-}) => {
-  const ai = getAIClient();
+// Fix: Added generateVideo for Veo video generation with polling as per guidelines.
+export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9' | '9:16' }) => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
-    config: { numberOfVideos: 1, resolution: '720p', aspectRatio: params.aspectRatio }
+    config: {
+      numberOfVideos: 1,
+      resolution: '720p',
+      aspectRatio: params.aspectRatio
+    }
   });
   while (!operation.done) {
     await new Promise(resolve => setTimeout(resolve, 10000));
     operation = await ai.operations.getVideosOperation({ operation: operation });
   }
+
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const res = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-  const blob = await res.blob();
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
 
-/* Implementation for video editing using Veo model */
-export const editVideo = async (params: {
-  prompt: string;
-  startImage?: { data: string; mimeType: string };
+// Fix: Added editVideo for Veo video generation with starting/ending images as per guidelines.
+export const editVideo = async (params: { 
+  prompt: string; 
+  startImage?: { data: string; mimeType: string }; 
   endImage?: { data: string; mimeType: string };
-  aspectRatio: '16:9' | '9:16';
+  aspectRatio: '16:9' | '9:16' 
 }) => {
-  const ai = getAIClient();
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
-    image: params.startImage ? { imageBytes: params.startImage.data, mimeType: params.startImage.mimeType } : undefined,
+    image: params.startImage ? {
+      imageBytes: params.startImage.data,
+      mimeType: params.startImage.mimeType
+    } : undefined,
     config: {
       numberOfVideos: 1,
       resolution: '720p',
       aspectRatio: params.aspectRatio,
-      lastFrame: params.endImage ? { imageBytes: params.endImage.data, mimeType: params.endImage.mimeType } : undefined,
+      lastFrame: params.endImage ? {
+        imageBytes: params.endImage.data,
+        mimeType: params.endImage.mimeType
+      } : undefined,
     }
   });
   while (!operation.done) {
@@ -265,8 +274,8 @@ export const editVideo = async (params: {
     operation = await ai.operations.getVideosOperation({ operation: operation });
   }
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const res = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-  const blob = await res.blob();
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
 

@@ -32,8 +32,15 @@ const VideoEditor: React.FC = () => {
     }
   };
 
+  // Fix: Added mandatory API Key selection check for Veo models as per guidelines.
   const handleGenerate = async () => {
     if (!usageService.canUse('pro')) return;
+
+    if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+      await (window as any).aistudio.openSelectKey();
+      // Proceed assuming success per race condition guideline.
+    }
+
     setLoading(true);
     setStatus('Preparing keyframes...');
     try {
@@ -59,6 +66,9 @@ const VideoEditor: React.FC = () => {
       usageService.increment('pro', 'video_edits');
     } catch (err: any) {
       console.error(err);
+      if (err.message?.includes("Requested entity was not found.")) {
+        await (window as any).aistudio.openSelectKey();
+      }
       alert(err.message || "Video editing failed.");
     } finally {
       setLoading(false);

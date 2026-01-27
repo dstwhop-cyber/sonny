@@ -10,16 +10,12 @@ export enum ViewType {
   WHATSAPP_PROMO = 'whatsapp_promo',
   CONTENT_IDEAS = 'content_ideas',
   IMAGE_LAB = 'image_lab',
-  VIDEO_STUDIO = 'video_studio',
   VOICE_LIVE = 'voice_live',
   ANALYSIS = 'analysis',
   PRICING = 'pricing',
   // Auth Views
   LOGIN = 'login',
-  REGISTER = 'register',
-  // Admin Views
-  ADMIN_LOGIN = 'admin_login',
-  ADMIN_DASHBOARD = 'admin_dashboard'
+  REGISTER = 'register'
 }
 
 export type PlanType = 'free' | 'pro' | 'agency';

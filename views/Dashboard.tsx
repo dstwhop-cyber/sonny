@@ -25,7 +25,6 @@ const Dashboard: React.FC = () => {
     { label: 'Scripts', value: usage.textCount, icon: '📜' },
     { label: 'Captions', value: usage.stats.captions, icon: '✍️' },
     { label: 'Hooks', value: usage.stats.hooks, icon: '🎵' },
-    { label: 'Video Clips', value: usage.stats.videos, icon: '🎞️' },
     { label: 'Images', value: usage.stats.images, icon: '🎨' },
     { label: 'Ideas', value: usage.stats.ideas, icon: '💡' },
     { label: 'Voice', value: usage.stats.voice, icon: '🎙️' },
@@ -75,7 +74,7 @@ const Dashboard: React.FC = () => {
           <div className="w-full bg-slate-100 dark:bg-slate-800 h-4 rounded-full overflow-hidden">
             <div className={`h-full transition-all duration-1000 ${usage.isPro ? 'bg-gradient-to-r from-purple-400 to-purple-600' : 'bg-purple-600'}`} style={{ width: `${Math.min(proProgress, 100)}%` }}></div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">4K Images, Veo Video Clips, and Voice Synthesis.</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">4K Images and Voice Synthesis.</p>
         </div>
       </div>
 
@@ -108,7 +107,7 @@ const Dashboard: React.FC = () => {
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">💎</div>
             <div>
               <h4 className="text-xl font-black">Join Sonny Pro</h4>
-              <p className="text-white/80 font-medium">Unlimited 4K images, Veo video, and Voice studio.</p>
+              <p className="text-white/80 font-medium">Unlimited 4K images and Voice studio.</p>
             </div>
           </div>
           <button onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'pricing' }))} className="px-8 py-4 bg-white text-blue-600 font-black rounded-2xl shadow-xl hover:scale-105 transition-all">Upgrade Now</button>

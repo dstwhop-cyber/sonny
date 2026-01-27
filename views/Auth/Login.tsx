@@ -61,17 +61,11 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
           </button>
         </form>
 
-        <div className="pt-4 text-center space-y-4">
+        <div className="pt-4 text-center">
           <p className="text-slate-500 text-xs font-medium">
             Don't have an account? {' '}
             <button onClick={() => onViewChange(ViewType.REGISTER)} className="text-blue-600 font-bold hover:underline">Sign up free</button>
           </p>
-          <button 
-            onClick={() => window.location.hash = '#/admin-portal'}
-            className="text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest hover:text-blue-500 transition-colors"
-          >
-            System Owner Login
-          </button>
         </div>
       </div>
     </div>

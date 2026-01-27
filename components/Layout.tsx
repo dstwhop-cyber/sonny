@@ -39,7 +39,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
     { id: ViewType.BUSINESS_ADS, label: 'Ad Copywriter', icon: '📢' },
     { id: ViewType.WHATSAPP_PROMO, label: 'WhatsApp Promo', icon: '💬' },
     { id: ViewType.IMAGE_LAB, label: 'AI Image Lab', icon: '🎨' },
-    { id: ViewType.VIDEO_STUDIO, label: 'Veo Video Studio', icon: '📽️' },
     { id: ViewType.VOICE_LIVE, label: 'Voice Studio', icon: '🎙️' },
     { id: ViewType.ANALYSIS, label: 'Media Analysis', icon: '🔍' },
     { id: ViewType.PRICING, label: 'Pricing & Pro', icon: '💎' },

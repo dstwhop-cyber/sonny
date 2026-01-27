@@ -5,7 +5,6 @@ import { paymentService } from '../services/paymentService';
 
 const Pricing: React.FC = () => {
   const user = usageService.getCurrentUser();
-  const [showPayPal, setShowPayPal] = useState<string | null>(null);
 
   useEffect(() => {
     // Initialize Paddle if the script is loaded
@@ -38,7 +37,7 @@ const Pricing: React.FC = () => {
         }
       });
     } else {
-      const confirmDemo = confirm(`Paddle SDK not detected. Simulate success for ${plan.toUpperCase()}?`);
+      const confirmDemo = confirm(`Card Payment (Paddle) SDK not detected. Simulate success for ${plan.toUpperCase()}?`);
       if (confirmDemo) {
         paymentService.handlePaddleWebhook(user.id, 'subscription.created', plan, `SUB_DEMO_${Date.now()}`);
         alert(`Demo mode: ${plan.toUpperCase()} activated for ${user.email}`);
@@ -49,41 +48,79 @@ const Pricing: React.FC = () => {
 
   const PayPalButtonContainer: React.FC<{ plan: 'pro' | 'agency' }> = ({ plan }) => {
     const btnRef = useRef<HTMLDivElement>(null);
+    const [sdkStatus, setSdkStatus] = useState<'loading' | 'ready' | 'error'>('loading');
 
     useEffect(() => {
-      const win = window as any;
-      if (win.paypal && btnRef.current) {
-        btnRef.current.innerHTML = ''; // Clear previous button
-        win.paypal.Buttons({
-          style: {
-            layout: 'horizontal',
-            color: 'gold',
-            shape: 'pill',
-            label: 'paypal',
-            height: 45
-          },
-          createSubscription: (data: any, actions: any) => {
-            // In a real environment, you'd provide the actual plan ID from your PayPal dashboard
-            return actions.subscription.create({
-              'plan_id': plan === 'pro' ? 'P-PRO123' : 'P-AGENCY456'
-            });
-          },
-          onApprove: (data: any, actions: any) => {
-            paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, data.subscriptionID);
-            alert(`PayPal Subscription Successful! Welcome to ${plan.toUpperCase()}.`);
-            window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
-          },
-          onError: (err: any) => {
-            console.error('PayPal Error', err);
-            // Fallback for demo if PayPal fails to load properly in this environment
-            if (confirm("PayPal button encountered an error in this demo frame. Force upgrade for testing?")) {
-               paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, 'PP_MOCK_ID');
-               window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+      let retryCount = 0;
+      const maxRetries = 10;
+
+      const initPaypal = () => {
+        const win = window as any;
+        if (win.paypal && btnRef.current) {
+          setSdkStatus('ready');
+          btnRef.current.innerHTML = ''; // Clear previous instances
+          win.paypal.Buttons({
+            style: {
+              layout: 'horizontal',
+              color: 'gold',
+              shape: 'pill',
+              label: 'paypal',
+              height: 45
+            },
+            createOrder: (data: any, actions: any) => {
+              // Using createOrder for wider compatibility in demo mode
+              return actions.order.create({
+                purchase_units: [{
+                  description: `${plan.toUpperCase()} Plan Subscription`,
+                  amount: {
+                    currency_code: 'USD',
+                    value: plan === 'pro' ? '29.00' : '99.00'
+                  }
+                }]
+              });
+            },
+            onApprove: (data: any, actions: any) => {
+              return actions.order.capture().then(() => {
+                paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, data.orderID);
+                alert(`PayPal Payment Successful! Welcome to ${plan.toUpperCase()}.`);
+                window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+              });
+            },
+            onError: (err: any) => {
+              console.error('PayPal Buttons Error', err);
+              setSdkStatus('error');
             }
-          }
-        }).render(btnRef.current);
-      }
+          }).render(btnRef.current);
+        } else if (retryCount < maxRetries) {
+          retryCount++;
+          setTimeout(initPaypal, 1000);
+        } else {
+          setSdkStatus('error');
+        }
+      };
+
+      initPaypal();
     }, [plan]);
+
+    if (sdkStatus === 'loading') {
+      return <div className="w-full text-center py-4 text-xs font-bold text-slate-400 animate-pulse">Initializing PayPal Securely...</div>;
+    }
+
+    if (sdkStatus === 'error') {
+      return (
+        <button 
+          onClick={() => {
+            if (confirm(`PayPal SDK failed to load. Use manual sandbox bypass for ${plan.toUpperCase()}?`)) {
+              paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, 'MOCK_PAYPAL_ID');
+              window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+            }
+          }}
+          className="w-full mt-4 py-2 border-2 border-dashed border-amber-400 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+        >
+          Manual PayPal Activation
+        </button>
+      );
+    }
 
     return <div ref={btnRef} className="w-full mt-4"></div>;
   };
@@ -107,7 +144,7 @@ const Pricing: React.FC = () => {
                 </div>
              </div>
              <ul className="space-y-4">
-                {['Unlimited Viral Captions', '4K Image Generation', 'Veo Cinematic Videos', 'Native Voice Synthesis', 'Deep Reasoning Models'].map((f, i) => (
+                {['Unlimited Viral Captions', '4K Image Generation', 'Native Voice Synthesis', 'Deep Reasoning Models', 'Priority Support'].map((f, i) => (
                    <li key={i} className="flex items-center space-x-3 text-slate-600 dark:text-slate-300 font-bold">
                       <span className="text-blue-500 text-xl">✓</span>
                       <span>{f}</span>
@@ -115,16 +152,16 @@ const Pricing: React.FC = () => {
                 ))}
              </ul>
              
-             <div className="space-y-4">
+             <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <button 
                   onClick={() => handlePaddleUpgrade('pro')} 
                   className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center space-x-2"
                 >
-                  <span>Pay with Card (Paddle)</span>
+                  <span>Pay with Card</span>
                 </button>
                 
                 <div className="flex flex-col items-center">
-                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Alternative</p>
+                   <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Secure Alternative</p>
                    {user ? (
                      <PayPalButtonContainer plan="pro" />
                    ) : (
@@ -152,7 +189,7 @@ const Pricing: React.FC = () => {
                 ))}
              </ul>
              
-             <div className="space-y-4 mt-auto">
+             <div className="space-y-4 mt-auto pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button 
                   onClick={() => handlePaddleUpgrade('agency')} 
                   className="w-full py-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-2xl font-black shadow-xl hover:scale-[1.02] active:scale-95 transition-all"
@@ -161,7 +198,7 @@ const Pricing: React.FC = () => {
                 </button>
                 
                 <div className="flex flex-col items-center">
-                   <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Alternative</p>
+                   <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mb-2">Secure Alternative</p>
                    {user ? (
                      <PayPalButtonContainer plan="agency" />
                    ) : (

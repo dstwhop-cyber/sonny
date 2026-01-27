@@ -1,5 +1,4 @@
 
-import { adminService } from './adminService';
 import { userRegistryService } from './userRegistryService';
 import { authService } from './authService';
 import { UserProfile } from '../types';
@@ -27,14 +26,9 @@ export const usageService = {
 
   canUse: (type: 'text' | 'pro'): boolean => {
     const user = usageService.getCurrentUser();
-    const config = adminService.getConfig();
 
     if (!user || user.isBanned) return false;
 
-    // Global killswitches
-    if (type === 'text' && !config.featuresEnabled.text) return false;
-    if (type === 'pro' && !config.featuresEnabled.media) return false;
-    
     // Paid tiers are unlimited for this demo
     if (user.plan !== 'free') return true; 
 

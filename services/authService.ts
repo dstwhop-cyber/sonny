@@ -46,6 +46,8 @@ export const authService = {
       return { success: false, error: "Invalid credentials." };
     }
 
+    // Keep check for banned status in case legacy data exists, 
+    // though new admins cannot be created to set this.
     if (user.isBanned) {
       return { success: false, error: "Your account has been terminated." };
     }

@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import { ViewType } from './types';
-import { adminService } from './services/adminService';
 import { authService } from './services/authService';
 import CaptionGenerator from './views/CaptionGenerator';
 import DescriptionMaker from './views/DescriptionMaker';
@@ -13,15 +12,12 @@ import BusinessAds from './views/BusinessAds';
 import WhatsAppPromo from './views/WhatsAppPromo';
 import ContentIdeas from './views/ContentIdeas';
 import ImageLab from './views/ImageLab';
-import VideoStudio from './views/VideoStudio';
 import VoiceStudio from './views/VoiceStudio';
 import MediaAnalysis from './views/MediaAnalysis';
 import Pricing from './views/Pricing';
 import Dashboard from './views/Dashboard';
 import Login from './views/Auth/Login';
 import Register from './views/Auth/Register';
-import AdminLogin from './views/AdminLogin';
-import AdminDashboard from './views/AdminDashboard';
 
 const App: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewType>(() => {
@@ -49,34 +45,20 @@ const App: React.FC = () => {
     const checkAuth = () => {
       const authenticated = authService.isAuthenticated();
       setIsAuth(authenticated);
-      const publicViews = [ViewType.LOGIN, ViewType.REGISTER, ViewType.ADMIN_LOGIN, ViewType.ADMIN_DASHBOARD];
+      const publicViews = [ViewType.LOGIN, ViewType.REGISTER];
       if (!authenticated && !publicViews.includes(activeView)) setActiveView(ViewType.LOGIN);
     };
     window.addEventListener('authChange', checkAuth);
     return () => window.removeEventListener('authChange', checkAuth);
   }, [activeView]);
 
-  useEffect(() => {
-    const checkRoute = () => {
-      if (window.location.hash === '#/admin-portal') {
-        setActiveView(adminService.isAuthenticated() ? ViewType.ADMIN_DASHBOARD : ViewType.ADMIN_LOGIN);
-      }
-    };
-    window.addEventListener('hashchange', checkRoute);
-    checkRoute();
-    return () => window.removeEventListener('hashchange', checkRoute);
-  }, []);
-
   const renderView = () => {
-    const publicViews = [ViewType.LOGIN, ViewType.REGISTER, ViewType.ADMIN_LOGIN, ViewType.ADMIN_DASHBOARD];
+    const publicViews = [ViewType.LOGIN, ViewType.REGISTER];
     if (!isAuth && !publicViews.includes(activeView)) return <Login onViewChange={setActiveView} />;
-    if (activeView === ViewType.ADMIN_DASHBOARD && !adminService.isAuthenticated()) return <AdminLogin onSuccess={() => setActiveView(ViewType.ADMIN_DASHBOARD)} />;
 
     switch (activeView) {
       case ViewType.LOGIN: return <Login onViewChange={setActiveView} />;
       case ViewType.REGISTER: return <Register onViewChange={setActiveView} />;
-      case ViewType.ADMIN_LOGIN: return <AdminLogin onSuccess={() => setActiveView(ViewType.ADMIN_DASHBOARD)} />;
-      case ViewType.ADMIN_DASHBOARD: return <AdminDashboard />;
       case ViewType.DASHBOARD: return <Dashboard />;
       case ViewType.PRICING: return <Pricing />;
       case ViewType.CAPTION_GEN: return <CaptionGenerator />;
@@ -88,14 +70,13 @@ const App: React.FC = () => {
       case ViewType.WHATSAPP_PROMO: return <WhatsAppPromo />;
       case ViewType.CONTENT_IDEAS: return <ContentIdeas />;
       case ViewType.IMAGE_LAB: return <ImageLab />;
-      case ViewType.VIDEO_STUDIO: return <VideoStudio />;
       case ViewType.VOICE_LIVE: return <VoiceStudio />;
       case ViewType.ANALYSIS: return <MediaAnalysis />;
       default: return <Dashboard />;
     }
   };
 
-  const standaloneViews = [ViewType.LOGIN, ViewType.REGISTER, ViewType.ADMIN_LOGIN, ViewType.ADMIN_DASHBOARD];
+  const standaloneViews = [ViewType.LOGIN, ViewType.REGISTER];
   if (standaloneViews.includes(activeView)) return renderView();
 
   return (
