@@ -36,9 +36,9 @@ const Dashboard: React.FC = () => {
     <div className="space-y-8 animate-in fade-in duration-500 p-6 md:p-10">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Creator Dashboard</h2>
+          <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Sonny Dashboard</h2>
           <p className="text-slate-500 dark:text-slate-400 font-medium">
-            {usage.isPro ? 'Enjoy unrestricted access to the full AI suite.' : 'Monitor your lifetime trial credits.'}
+            {usage.isPro ? 'Enjoy unrestricted access to the full Sonny AI suite.' : 'Monitor your lifetime trial credits.'}
           </p>
         </div>
         {!usage.isPro && (
@@ -98,8 +98,8 @@ const Dashboard: React.FC = () => {
         <div className="p-8 bg-slate-900 dark:bg-blue-900/30 rounded-[2rem] border border-blue-500/30 flex items-center justify-center text-center shadow-lg">
            <div className="space-y-2">
              <div className="text-4xl">👑</div>
-             <h4 className="text-xl font-black text-white dark:text-blue-400 uppercase tracking-widest">Master Creator Status</h4>
-             <p className="text-slate-400 max-w-md mx-auto text-sm">Unlocked full potential of SocialMediaPro.</p>
+             <h4 className="text-xl font-black text-white dark:text-blue-400 uppercase tracking-widest">Master Sonny Status</h4>
+             <p className="text-slate-400 max-w-md mx-auto text-sm">Unlocked full potential of Sonny AI.</p>
            </div>
         </div>
       ) : (
@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-6 text-center md:text-left mb-6 md:mb-0">
             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl">💎</div>
             <div>
-              <h4 className="text-xl font-black">Join Creator Pro</h4>
+              <h4 className="text-xl font-black">Join Sonny Pro</h4>
               <p className="text-white/80 font-medium">Unlimited 4K images, Veo video, and Voice studio.</p>
             </div>
           </div>

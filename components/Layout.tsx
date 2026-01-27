@@ -54,8 +54,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
     <>
       <div className="p-6 flex items-center justify-between lg:block">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-blue-400">SocialMediaPro AI</h1>
-          <p className="text-xs text-slate-400 mt-1 uppercase font-semibold">Creator Suite</p>
+          <h1 className="text-2xl font-black tracking-tight text-blue-500">Sonny</h1>
+          <p className="text-[10px] text-slate-400 mt-0.5 uppercase font-bold tracking-widest">AI Creator Pro</p>
         </div>
         <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400 hover:text-white">✕</button>
       </div>
@@ -103,7 +103,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
           <div className="flex items-center space-x-2 md:space-x-4">
              {user?.plan === 'pro' && <span className="hidden md:inline text-[9px] font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-1 rounded-md uppercase">Master Creator</span>}
             <button onClick={onToggleDarkMode} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">{isDarkMode ? '☀️' : '🌙'}</button>
-            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xs flex-shrink-0">{user?.email[0].toUpperCase() || 'AI'}</div>
+            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xs flex-shrink-0">{user?.email[0].toUpperCase() || 'S'}</div>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto p-0 bg-slate-50 dark:bg-slate-950 transition-colors">{children}</div>
