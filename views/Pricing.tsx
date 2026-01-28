@@ -68,13 +68,13 @@ const Pricing: React.FC = () => {
               height: 45
             },
             createOrder: (data: any, actions: any) => {
-              // Using createOrder for wider compatibility in demo mode
+              // Pro plan is $5.00, Agency plan is now $25.00
               return actions.order.create({
                 purchase_units: [{
                   description: `${plan.toUpperCase()} Plan Subscription`,
                   amount: {
                     currency_code: 'USD',
-                    value: plan === 'pro' ? '29.00' : '99.00'
+                    value: plan === 'pro' ? '5.00' : '25.00'
                   }
                 }]
               });
@@ -139,7 +139,7 @@ const Pricing: React.FC = () => {
              <div className="space-y-2">
                 <h3 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Creator Pro</h3>
                 <div className="flex items-baseline space-x-2">
-                   <span className="text-5xl font-black text-slate-900 dark:text-white">$29</span>
+                   <span className="text-5xl font-black text-slate-900 dark:text-white">$5</span>
                    <span className="text-slate-500 font-bold">/ month</span>
                 </div>
              </div>
@@ -176,7 +176,8 @@ const Pricing: React.FC = () => {
              <div className="space-y-2">
                 <h3 className="text-2xl font-black text-slate-700 dark:text-slate-200 uppercase tracking-tighter">Agency Elite</h3>
                 <div className="flex items-baseline space-x-2">
-                   <span className="text-5xl font-black text-slate-800 dark:text-white">$99</span>
+                   {/* Updated: Reduced monthly payment to $25 */}
+                   <span className="text-5xl font-black text-slate-800 dark:text-white">$25</span>
                    <span className="text-slate-500 font-bold">/ month</span>
                 </div>
              </div>
