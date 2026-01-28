@@ -161,7 +161,7 @@ Hashtags: ${script.hashtags.join(' ')}
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 italic">The Hook (Scroll Stopper):</p>
                         <p className="text-lg font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-snug">
                           {script.hook}
-                        </span>
+                        </p>
                       </div>
                       
                       <div className="space-y-2">
