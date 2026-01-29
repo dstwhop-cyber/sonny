@@ -12,9 +12,10 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = authService.login(email, password);
+    // Corrected to await the async login call
+    const result = await authService.login(email, password);
     if (result.success) {
       onViewChange(ViewType.DASHBOARD);
     } else {

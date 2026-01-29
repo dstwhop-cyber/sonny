@@ -10,8 +10,12 @@ const AdminDashboard: React.FC = () => {
   const [config, setConfig] = useState<GlobalConfig>(adminService.getConfig());
 
   useEffect(() => {
-    setUsers(userRegistryService.getUsers());
-    setLogs(userRegistryService.getLogs());
+    // Corrected to use async loading inside useEffect
+    const loadData = async () => {
+      setUsers(await userRegistryService.getUsers());
+      setLogs(await userRegistryService.getLogs());
+    };
+    loadData();
   }, []);
 
   const toggleFeature = (feature: keyof GlobalConfig['featuresEnabled']) => {
@@ -21,14 +25,16 @@ const AdminDashboard: React.FC = () => {
     setConfig(newConfig);
   };
 
-  const overridePlan = (userId: string, plan: UserProfile['plan']) => {
-    userRegistryService.updateUserStatus(userId, { plan });
-    setUsers(userRegistryService.getUsers());
+  const overridePlan = async (userId: string, plan: UserProfile['plan']) => {
+    // Corrected to await async service calls
+    await userRegistryService.updateUserStatus(userId, { plan });
+    setUsers(await userRegistryService.getUsers());
   };
 
-  const toggleBan = (userId: string, isBanned: boolean) => {
-    userRegistryService.updateUserStatus(userId, { isBanned: !isBanned });
-    setUsers(userRegistryService.getUsers());
+  const toggleBan = async (userId: string, isBanned: boolean) => {
+    // Corrected to await async service calls
+    await userRegistryService.updateUserStatus(userId, { isBanned: !isBanned });
+    setUsers(await userRegistryService.getUsers());
   };
 
   return (

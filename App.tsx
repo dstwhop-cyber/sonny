@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import { ViewType } from './types';
 import { authService } from './services/authService';
+import { usageService } from './services/usageService';
+import { supabase, isSupabaseConfigured } from './services/supabaseClient';
 import CaptionGenerator from './views/CaptionGenerator';
 import DescriptionMaker from './views/DescriptionMaker';
 import TikTokHooks from './views/TikTokHooks';
@@ -19,11 +21,38 @@ import Dashboard from './views/Dashboard';
 import Login from './views/Auth/Login';
 import Register from './views/Auth/Register';
 
+const ConfigError: React.FC = () => (
+  <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-10 text-center space-y-8">
+    <div className="text-8xl animate-bounce">🛠️</div>
+    <div className="max-w-md space-y-4">
+      <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">Supabase Required</h1>
+      <p className="text-slate-400 font-medium text-lg leading-relaxed">
+        To launch Sonny Studio, you need to provide your Supabase API Key.
+      </p>
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-left space-y-4">
+        <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">Configuration Status:</p>
+        <ul className="space-y-2">
+          <li className="flex items-center text-sm text-slate-300">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+            URL: Detected
+          </li>
+          <li className="flex items-center text-sm text-slate-300">
+            <span className="w-2 h-2 bg-red-500 rounded-full mr-3"></span>
+            ANON_KEY: Missing
+          </li>
+        </ul>
+        <p className="text-[10px] text-slate-500 italic mt-4 font-medium">
+          Add SUPABASE_ANON_KEY to your environment variables to activate authentication and database features.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<ViewType>(() => {
-    return authService.isAuthenticated() ? ViewType.DASHBOARD : ViewType.LOGIN;
-  });
-  const [isAuth, setIsAuth] = useState(authService.isAuthenticated());
+  const [activeView, setActiveView] = useState<ViewType>(ViewType.LOGIN);
+  const [isAuth, setIsAuth] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const saved = localStorage.getItem('sm_pro_theme');
     return saved ? saved === 'dark' : true;
@@ -35,22 +64,64 @@ const App: React.FC = () => {
     localStorage.setItem('sm_pro_theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
+  // Handle Supabase Auth State
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setIsLoading(false);
+      return;
+    }
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const authenticated = !!session;
+        setIsAuth(authenticated);
+        
+        if (authenticated) {
+          await usageService.refreshProfile();
+          setActiveView(ViewType.DASHBOARD);
+        }
+      } catch (err) {
+        console.error("Auth initialization error:", err);
+      }
+      setIsLoading(false);
+    };
+
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const authenticated = !!session;
+      setIsAuth(authenticated);
+      
+      if (event === 'SIGNED_IN') {
+        await usageService.refreshProfile();
+        setActiveView(ViewType.DASHBOARD);
+      } else if (event === 'SIGNED_OUT') {
+        setActiveView(ViewType.LOGIN);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     const handleViewChange = (e: any) => { if (e.detail) setActiveView(e.detail as ViewType); };
     window.addEventListener('changeView', handleViewChange);
     return () => window.removeEventListener('changeView', handleViewChange);
   }, []);
 
-  useEffect(() => {
-    const checkAuth = () => {
-      const authenticated = authService.isAuthenticated();
-      setIsAuth(authenticated);
-      const publicViews = [ViewType.LOGIN, ViewType.REGISTER];
-      if (!authenticated && !publicViews.includes(activeView)) setActiveView(ViewType.LOGIN);
-    };
-    window.addEventListener('authChange', checkAuth);
-    return () => window.removeEventListener('authChange', checkAuth);
-  }, [activeView]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // If environment variables are missing, show the setup instructions
+  if (!isSupabaseConfigured || !supabase) {
+    return <ConfigError />;
+  }
 
   const renderView = () => {
     const publicViews = [ViewType.LOGIN, ViewType.REGISTER];

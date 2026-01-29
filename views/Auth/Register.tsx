@@ -12,13 +12,14 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
       return;
     }
-    const result = authService.signup(email, password);
+    // Corrected to await the async signup call
+    const result = await authService.signup(email, password);
     if (result.success) {
       onViewChange(ViewType.DASHBOARD);
     } else {
