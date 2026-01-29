@@ -17,8 +17,15 @@ const ImageLab: React.FC = () => {
     return () => window.removeEventListener('usageUpdated', updateUsage);
   }, []);
 
+  // Fix: Added mandatory API Key selection check for Gemini 3 Pro models as per guidelines.
   const handleGenerate = async () => {
     if (!usageService.canUse('pro')) return;
+
+    if (!(await (window as any).aistudio.hasSelectedApiKey())) {
+      await (window as any).aistudio.openSelectKey();
+      // Proceed assuming success per race condition guideline.
+    }
+
     setLoading(true);
     try {
       const url = await generateImage({ prompt, aspectRatio, imageSize });
@@ -26,6 +33,9 @@ const ImageLab: React.FC = () => {
       usageService.increment('pro');
     } catch (err: any) {
       console.error(err);
+      if (err.message?.includes("Requested entity was not found.")) {
+        await (window as any).aistudio.openSelectKey();
+      }
       alert(err.message || "Image generation failed.");
     } finally {
       setLoading(false);

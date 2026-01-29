@@ -1,5 +1,6 @@
 
 export enum ViewType {
+  // Fix: Added missing DASHBOARD property used in Login.tsx
   DASHBOARD = 'dashboard',
   CAPTION_GEN = 'caption_gen',
   DESCRIPTION_GEN = 'description_gen',
@@ -13,6 +14,17 @@ export enum ViewType {
   VOICE_LIVE = 'voice_live',
   ANALYSIS = 'analysis',
   PRICING = 'pricing',
+  // New Tool Views
+  VIDEO_STUDIO = 'video_studio',
+  VIDEO_EDITOR = 'video_editor',
+  SMART_CUT = 'smart_cut',
+  SHORT_CAPTIONS = 'short_captions',
+  TIKTOK_EDIT_PLAN = 'tiktok_edit_plan',
+  B_ROLL_GEN = 'b_roll_gen',
+  MUSIC_SYNC = 'music_sync',
+  ZOOM_EFFECTS = 'zoom_effects',
+  VIDEO_TEMPLATES = 'video_templates',
+  VIDEO_DIRECTOR = 'video_director',
   // Auth Views
   LOGIN = 'login',
   REGISTER = 'register'

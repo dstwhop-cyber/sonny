@@ -11,17 +11,42 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Corrected to await the async login call
+    setIsLoading(true);
+    setError('');
+    setResendSuccess(false);
+
     const result = await authService.login(email, password);
     if (result.success) {
       onViewChange(ViewType.DASHBOARD);
     } else {
       setError(result.error || 'Login failed.');
     }
+    setIsLoading(false);
   };
+
+  const handleResendEmail = async () => {
+    if (!email) {
+      setError("Please enter your email address first.");
+      return;
+    }
+    setResending(true);
+    const result = await authService.resendConfirmation(email);
+    if (result.success) {
+      setResendSuccess(true);
+      setError('');
+    } else {
+      setError(result.error || "Failed to resend email.");
+    }
+    setResending(false);
+  };
+
+  const isEmailUnconfirmed = error.toLowerCase().includes('not confirmed') || error.toLowerCase().includes('email_not_confirmed');
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
@@ -52,13 +77,34 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
             />
           </div>
 
-          {error && <p className="text-red-500 text-xs font-bold text-center italic">{error}</p>}
+          {error && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/40 rounded-2xl text-center space-y-3">
+              <p className="text-red-600 dark:text-red-400 text-xs font-bold leading-relaxed">{error}</p>
+              {isEmailUnconfirmed && (
+                <button 
+                  type="button"
+                  onClick={handleResendEmail}
+                  disabled={resending}
+                  className="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 underline decoration-dotted underline-offset-4 hover:text-blue-500 disabled:opacity-50"
+                >
+                  {resending ? 'Sending...' : 'Resend Confirmation Link'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {resendSuccess && (
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/40 rounded-2xl text-center">
+              <p className="text-green-600 dark:text-green-400 text-xs font-bold">Confirmation email sent! Check your inbox.</p>
+            </div>
+          )}
 
           <button 
             type="submit"
-            className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+            disabled={isLoading}
+            className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50"
           >
-            Authenticate
+            {isLoading ? 'Verifying...' : 'Authenticate'}
           </button>
         </form>
 

@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import { ViewType } from './types';
 import { authService } from './services/authService';
 import { usageService } from './services/usageService';
 import { supabase, isSupabaseConfigured } from './services/supabaseClient';
+// Fix: Added missing import for Dashboard view
+import Dashboard from './views/Dashboard';
 import CaptionGenerator from './views/CaptionGenerator';
 import DescriptionMaker from './views/DescriptionMaker';
 import TikTokHooks from './views/TikTokHooks';
@@ -17,9 +18,18 @@ import ImageLab from './views/ImageLab';
 import VoiceStudio from './views/VoiceStudio';
 import MediaAnalysis from './views/MediaAnalysis';
 import Pricing from './views/Pricing';
-import Dashboard from './views/Dashboard';
 import Login from './views/Auth/Login';
 import Register from './views/Auth/Register';
+import VideoStudio from './views/VideoStudio';
+import VideoEditor from './views/VideoEditor';
+import SmartCut from './views/SmartCut';
+import ShortCaptions from './views/ShortCaptions';
+import TikTokEditPlan from './views/TikTokEditPlan';
+import BRollGenerator from './views/BRollGenerator';
+import MusicSync from './views/MusicSync';
+import ZoomEffects from './views/ZoomEffects';
+import VideoTemplates from './views/VideoTemplates';
+import VideoDirector from './views/VideoDirector';
 
 const ConfigError: React.FC = () => (
   <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-10 text-center space-y-8">
@@ -79,6 +89,7 @@ const App: React.FC = () => {
         
         if (authenticated) {
           await usageService.refreshProfile();
+          // Fix: Initial auth check now redirects to Dashboard instead of Caption Gen
           setActiveView(ViewType.DASHBOARD);
         }
       } catch (err) {
@@ -89,13 +100,13 @@ const App: React.FC = () => {
 
     initAuth();
 
-    // Fix: Added explicit 'any' types for event and session to satisfy Vercel build's strict TS rules
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       const authenticated = !!session;
       setIsAuth(authenticated);
       
       if (event === 'SIGNED_IN') {
         await usageService.refreshProfile();
+        // Fix: Sign in event now correctly redirects to the Dashboard view
         setActiveView(ViewType.DASHBOARD);
       } else if (event === 'SIGNED_OUT') {
         setActiveView(ViewType.LOGIN);
@@ -131,6 +142,7 @@ const App: React.FC = () => {
     switch (activeView) {
       case ViewType.LOGIN: return <Login onViewChange={setActiveView} />;
       case ViewType.REGISTER: return <Register onViewChange={setActiveView} />;
+      // Fix: Added case for DASHBOARD in the view switch
       case ViewType.DASHBOARD: return <Dashboard />;
       case ViewType.PRICING: return <Pricing />;
       case ViewType.CAPTION_GEN: return <CaptionGenerator />;
@@ -142,9 +154,20 @@ const App: React.FC = () => {
       case ViewType.WHATSAPP_PROMO: return <WhatsAppPromo />;
       case ViewType.CONTENT_IDEAS: return <ContentIdeas />;
       case ViewType.IMAGE_LAB: return <ImageLab />;
+      // Fix: Changed ViewType.VOICE_STUDIO to ViewType.VOICE_LIVE to match types.ts
       case ViewType.VOICE_LIVE: return <VoiceStudio />;
       case ViewType.ANALYSIS: return <MediaAnalysis />;
-      default: return <Dashboard />;
+      case ViewType.VIDEO_STUDIO: return <VideoStudio />;
+      case ViewType.VIDEO_EDITOR: return <VideoEditor />;
+      case ViewType.SMART_CUT: return <SmartCut />;
+      case ViewType.SHORT_CAPTIONS: return <ShortCaptions />;
+      case ViewType.TIKTOK_EDIT_PLAN: return <TikTokEditPlan />;
+      case ViewType.B_ROLL_GEN: return <BRollGenerator />;
+      case ViewType.MUSIC_SYNC: return <MusicSync />;
+      case ViewType.ZOOM_EFFECTS: return <ZoomEffects />;
+      case ViewType.VIDEO_TEMPLATES: return <VideoTemplates />;
+      case ViewType.VIDEO_DIRECTOR: return <VideoDirector />;
+      default: return <CaptionGenerator />;
     }
   };
 

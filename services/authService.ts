@@ -17,7 +17,7 @@ export const authService = {
       await userRegistryService.createProfile(data.user.id, data.user.email!);
     }
 
-    return { success: true };
+    return { success: true, user: data.user };
   },
 
   login: async (email: string, password: string) => {
@@ -37,6 +37,18 @@ export const authService = {
       }
     }
 
+    return { success: true };
+  },
+
+  resendConfirmation: async (email: string) => {
+    if (!isSupabaseConfigured || !supabase) return { success: false, error: 'Supabase is not configured.' };
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+
+    if (error) return { success: false, error: error.message };
     return { success: true };
   },
 

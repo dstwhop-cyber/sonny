@@ -101,7 +101,8 @@ export const generateCaption = async (config: {
 
   /* Corrected model names per guidelines for Maps and Thinking */
   let modelName = 'gemini-3-flash-preview';
-  if (config.useMaps) modelName = 'gemini-flash-lite-latest';
+  // Fix: Maps grounding is only supported in Gemini 2.5 series models.
+  if (config.useMaps) modelName = 'gemini-2.5-flash';
   else if (config.useThinking) modelName = 'gemini-3-pro-preview';
 
   const tools: any[] = [];

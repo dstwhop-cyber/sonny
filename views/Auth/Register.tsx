@@ -11,21 +11,53 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
       return;
     }
-    // Corrected to await the async signup call
+    
+    setIsLoading(true);
     const result = await authService.signup(email, password);
     if (result.success) {
-      onViewChange(ViewType.DASHBOARD);
+      // Show confirmation screen instead of auto-logging in (since email is required)
+      setIsSuccess(true);
     } else {
       setError(result.error || 'Signup failed.');
     }
+    setIsLoading(false);
   };
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-xl space-y-8 text-center animate-in fade-in zoom-in-95 duration-500">
+          <div className="text-7xl mb-4">📧</div>
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Check your email</h2>
+          <p className="text-slate-500 text-sm font-medium leading-relaxed">
+            We've sent a verification link to <span className="text-blue-600 font-bold">{email}</span>. 
+            Please click it to activate your account.
+          </p>
+          <div className="pt-6 space-y-4">
+            <button 
+              onClick={() => onViewChange(ViewType.LOGIN)}
+              className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+            >
+              Back to Login
+            </button>
+            <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+              Don't see it? Check your spam folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
@@ -56,13 +88,18 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
             />
           </div>
 
-          {error && <p className="text-red-500 text-xs font-bold text-center italic">{error}</p>}
+          {error && (
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/40 rounded-2xl">
+              <p className="text-red-500 text-xs font-bold text-center italic">{error}</p>
+            </div>
+          )}
 
           <button 
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl"
+            disabled={isLoading}
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-xl disabled:opacity-50"
           >
-            Create Profile
+            {isLoading ? 'Creating Account...' : 'Create Profile'}
           </button>
         </form>
 

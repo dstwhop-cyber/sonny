@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { usageService } from '../services/usageService';
 import { paymentService } from '../services/paymentService';
+import { ViewType } from '../types';
 
 const Pricing: React.FC = () => {
   const user = usageService.getCurrentUser();
@@ -18,7 +19,7 @@ const Pricing: React.FC = () => {
   const handlePaddleUpgrade = (plan: 'pro' | 'agency') => {
     if (!user) {
       alert("Please log in to upgrade.");
-      window.dispatchEvent(new CustomEvent('changeView', { detail: 'login' }));
+      window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.LOGIN }));
       return;
     }
 
@@ -30,7 +31,7 @@ const Pricing: React.FC = () => {
         successCallback: (data: any) => {
           paymentService.handlePaddleWebhook(user.id, 'subscription.created', plan, data.checkout.id);
           alert(`Welcome to ${plan.toUpperCase()}! Your features are now active.`);
-          window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+          window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.CAPTION_GEN }));
         },
         closeCallback: () => {
           console.log("Checkout closed");
@@ -41,7 +42,7 @@ const Pricing: React.FC = () => {
       if (confirmDemo) {
         paymentService.handlePaddleWebhook(user.id, 'subscription.created', plan, `SUB_DEMO_${Date.now()}`);
         alert(`Demo mode: ${plan.toUpperCase()} activated for ${user.email}`);
-        window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+        window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.CAPTION_GEN }));
       }
     }
   };
@@ -83,7 +84,7 @@ const Pricing: React.FC = () => {
               return actions.order.capture().then(() => {
                 paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, data.orderID);
                 alert(`PayPal Payment Successful! Welcome to ${plan.toUpperCase()}.`);
-                window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+                window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.CAPTION_GEN }));
               });
             },
             onError: (err: any) => {
@@ -112,7 +113,7 @@ const Pricing: React.FC = () => {
           onClick={() => {
             if (confirm(`PayPal SDK failed to load. Use manual sandbox bypass for ${plan.toUpperCase()}?`)) {
               paymentService.handlePaddleWebhook(user!.id, 'subscription.created', plan, 'MOCK_PAYPAL_ID');
-              window.dispatchEvent(new CustomEvent('changeView', { detail: 'dashboard' }));
+              window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.CAPTION_GEN }));
             }
           }}
           className="w-full mt-4 py-2 border-2 border-dashed border-amber-400 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
@@ -165,7 +166,7 @@ const Pricing: React.FC = () => {
                    {user ? (
                      <PayPalButtonContainer plan="pro" />
                    ) : (
-                     <button onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'login' }))} className="text-xs font-bold text-blue-500 underline">Login to use PayPal</button>
+                     <button onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.LOGIN }))} className="text-xs font-bold text-blue-500 underline">Login to use PayPal</button>
                    )}
                 </div>
              </div>
@@ -203,7 +204,7 @@ const Pricing: React.FC = () => {
                    {user ? (
                      <PayPalButtonContainer plan="agency" />
                    ) : (
-                     <button onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'login' }))} className="text-xs font-bold text-slate-500 underline">Login to use PayPal</button>
+                     <button onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: ViewType.LOGIN }))} className="text-xs font-bold text-slate-500 underline">Login to use PayPal</button>
                    )}
                 </div>
              </div>

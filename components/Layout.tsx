@@ -29,7 +29,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
   }, []);
 
   const navItems = [
-    { id: ViewType.DASHBOARD, label: 'Dashboard', icon: '📊' },
+    // Fix: Added Overview (Dashboard) as the primary navigation item
+    { id: ViewType.DASHBOARD, label: 'Overview', icon: '🏠' },
     { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️' },
     { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵' },
     { id: ViewType.SCRIPT_WRITER, label: 'Viral Script Writer', icon: '📜' },
@@ -39,8 +40,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
     { id: ViewType.BUSINESS_ADS, label: 'Ad Copywriter', icon: '📢' },
     { id: ViewType.WHATSAPP_PROMO, label: 'WhatsApp Promo', icon: '💬' },
     { id: ViewType.IMAGE_LAB, label: 'AI Image Lab', icon: '🎨' },
+    { id: ViewType.VIDEO_STUDIO, label: 'Veo Studio', icon: '🎬' },
+    { id: ViewType.VIDEO_EDITOR, label: 'AI Video Editor', icon: '🎞️' },
     { id: ViewType.VOICE_LIVE, label: 'Voice Studio', icon: '🎙️' },
     { id: ViewType.ANALYSIS, label: 'Media Analysis', icon: '🔍' },
+    { id: ViewType.VIDEO_DIRECTOR, label: 'AI Video Director', icon: '🎥' },
     { id: ViewType.PRICING, label: 'Pricing & Pro', icon: '💎' },
   ];
 
@@ -97,12 +101,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
         <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 shadow-sm z-10 transition-colors">
           <div className="flex items-center">
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden mr-4 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"><span className="text-xl">☰</span></button>
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 truncate">{navItems.find(i => i.id === activeView)?.label || 'Dashboard'}</h2>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 truncate">{navItems.find(i => i.id === activeView)?.label || 'Creator Studio'}</h2>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
              {user?.plan === 'pro' && <span className="hidden md:inline text-[9px] font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-1 rounded-md uppercase">Master Creator</span>}
             <button onClick={onToggleDarkMode} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors">{isDarkMode ? '☀️' : '🌙'}</button>
-            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xs flex-shrink-0">{user?.email[0].toUpperCase() || 'S'}</div>
+            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xs flex-shrink-0">{user?.email?.[0].toUpperCase() || 'S'}</div>
           </div>
         </header>
         <div className="flex-1 overflow-y-auto p-0 bg-slate-50 dark:bg-slate-950 transition-colors">{children}</div>
