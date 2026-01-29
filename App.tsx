@@ -89,7 +89,8 @@ const App: React.FC = () => {
 
     initAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Fix: Added explicit 'any' types for event and session to satisfy Vercel build's strict TS rules
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       const authenticated = !!session;
       setIsAuth(authenticated);
       
