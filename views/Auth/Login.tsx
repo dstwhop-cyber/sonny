@@ -52,7 +52,7 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-xl space-y-8 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center space-y-2">
-          <div className="text-5xl mb-4">🚀</div>
+          <img src="/logo.png" alt="Sonny" className="h-16 w-auto mx-auto mb-6 drop-shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
           <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Welcome Back</h1>
           <p className="text-slate-500 text-sm font-medium leading-relaxed">Sign in to your Creator Pro account</p>
         </div>

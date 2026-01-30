@@ -29,7 +29,6 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
   }, []);
 
   const navItems = [
-    // Fix: Added Overview (Dashboard) as the primary navigation item
     { id: ViewType.DASHBOARD, label: 'Overview', icon: '🏠' },
     { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️' },
     { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵' },
@@ -56,9 +55,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
   const SidebarContent = () => (
     <>
       <div className="p-6 flex items-center justify-between lg:block">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight text-blue-500">Sonny</h1>
-          <p className="text-[10px] text-slate-400 mt-0.5 uppercase font-bold tracking-widest">AI Creator Pro</p>
+        <div className="flex flex-col items-start">
+          <img 
+            src="/logo.png" 
+            alt="Sonny AI Studio" 
+            className="h-10 w-auto object-contain mb-1 drop-shadow-[0_0_15px_rgba(59,130,246,0.3)]" 
+          />
+          <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest ml-1">AI Creator Pro</p>
         </div>
         <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400 hover:text-white">✕</button>
       </div>
