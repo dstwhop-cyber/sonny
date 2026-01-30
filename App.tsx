@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import { ViewType } from './types';
@@ -60,7 +61,8 @@ const ConfigError: React.FC = () => (
 );
 
 const App: React.FC = () => {
-  const [activeView, setActiveView] = useState<ViewType>(ViewType.LOGIN);
+  // Changed default view to REGISTER so users see the sign-up form first
+  const [activeView, setActiveView] = useState<ViewType>(ViewType.REGISTER);
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -109,7 +111,8 @@ const App: React.FC = () => {
         // Fix: Sign in event now correctly redirects to the Dashboard view
         setActiveView(ViewType.DASHBOARD);
       } else if (event === 'SIGNED_OUT') {
-        setActiveView(ViewType.LOGIN);
+        // When signed out, we show the registration page first as per user preference
+        setActiveView(ViewType.REGISTER);
       }
     });
 
@@ -137,7 +140,8 @@ const App: React.FC = () => {
 
   const renderView = () => {
     const publicViews = [ViewType.LOGIN, ViewType.REGISTER];
-    if (!isAuth && !publicViews.includes(activeView)) return <Login onViewChange={setActiveView} />;
+    // If not authenticated, default to Register view as requested
+    if (!isAuth && !publicViews.includes(activeView)) return <Register onViewChange={setActiveView} />;
 
     switch (activeView) {
       case ViewType.LOGIN: return <Login onViewChange={setActiveView} />;

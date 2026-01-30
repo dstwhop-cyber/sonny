@@ -7,6 +7,31 @@ interface RegisterProps {
   onViewChange: (view: ViewType) => void;
 }
 
+const SonnyLogoLarge = () => (
+  <svg viewBox="0 0 100 100" className="h-20 w-20 mx-auto mb-6" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="logoGradReg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#6366f1" />
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="30" fill="url(#logoGradReg)" />
+    <text 
+      x="50%" 
+      y="68%" 
+      textAnchor="middle" 
+      fill="white" 
+      fontSize="54" 
+      fontWeight="900" 
+      fontFamily="Inter, sans-serif"
+      style={{ letterSpacing: '-0.05em' }}
+    >
+      S
+    </text>
+    <circle cx="78" cy="22" r="5" fill="#fbbf24" className="animate-ping" />
+  </svg>
+);
+
 const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +61,7 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
         <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-xl space-y-8 text-center animate-in fade-in zoom-in-95 duration-500">
-          <img src="/logo.png" alt="Sonny" className="h-20 w-auto mx-auto mb-2" />
+          <SonnyLogoLarge />
           <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Check your email</h2>
           <p className="text-slate-500 text-sm font-medium leading-relaxed">
             We've sent a verification link to <span className="text-blue-600 font-bold">{email}</span>. 
@@ -62,8 +87,8 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-xl space-y-8 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center space-y-2">
-          <img src="/logo.png" alt="Sonny" className="h-16 w-auto mx-auto mb-6 drop-shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
-          <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Create Account</h1>
+          <SonnyLogoLarge />
+          <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter italic">Create Account</h1>
           <p className="text-slate-500 text-sm font-medium leading-relaxed">Start your viral content journey</p>
         </div>
 

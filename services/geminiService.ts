@@ -27,14 +27,14 @@ export const generateVideoPlan = async (config: {
     contents: `Convert this script into a detailed, machine-readable video generation plan: "${config.script}". Style: ${config.style}`,
     config: {
       systemInstruction: `You are an AI video production specialist.
-Task: Split the script into short, engaging scenes for a 60–90 second video.
+Task: Split the script into short, engaging scenes for a video.
 Requirements:
 - Aspect ratio: 9:16 (TikTok/Reels optimized).
 - Style: ${config.style}.
 - Pacing: Fast, high engagement.
 - Each scene must include: scene ID, duration (seconds), narration, visuals, camera movement, background type, on-screen text, and audio notes.
 - Output ONLY valid JSON matching the provided schema.
-- Total duration must be between 60 and 90 seconds.`,
+- Total duration must be between 15 and 120 seconds.`,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -143,13 +143,14 @@ export const generateTikTokHooks = async (config: {
 export const generateSocialScripts = async (config: {
   topic: string;
   tone: string;
+  duration: string;
 }) => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Generate 3 unique script variations for the topic: "${config.topic}". Tone: ${config.tone}.`,
+    contents: `Generate 3 unique script variations for the topic: "${config.topic}". Tone: ${config.tone}. Target Duration: ${config.duration}.`,
     config: {
-      systemInstruction: `You are an AI social media script writer. Response must be valid JSON matching the variation schema. 30-60s scripts with hook, body, CTA, and 3-5 hashtags.`,
+      systemInstruction: `You are an AI social media script writer. Response must be valid JSON matching the variation schema. Scripts must fit the requested duration of ${config.duration} (strictly under 120s total). Include hook, body, CTA, and 3-5 hashtags.`,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.ARRAY,
@@ -222,7 +223,6 @@ export const generateImage = async (params: {
   throw new Error("No image data returned from Gemini");
 };
 
-// Fix: Added generateVideo for Veo video generation with polling as per guidelines.
 export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9' | '9:16' }) => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
@@ -245,7 +245,6 @@ export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9
   return URL.createObjectURL(blob);
 };
 
-// Fix: Added editVideo for Veo video generation with starting/ending images as per guidelines.
 export const editVideo = async (params: { 
   prompt: string; 
   startImage?: { data: string; mimeType: string }; 
@@ -313,7 +312,6 @@ export const textToSpeech = async (text: string) => {
   return base64Audio;
 };
 
-/* Implementation for identifying smart cuts using JSON schema */
 export const generateEditDecisions = async (description: string): Promise<EditDecision[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -339,7 +337,6 @@ export const generateEditDecisions = async (description: string): Promise<EditDe
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for short captions using JSON schema */
 export const generateShortCaptions = async (transcript: string, tone: string): Promise<ShortCaption[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -363,7 +360,6 @@ export const generateShortCaptions = async (transcript: string, tone: string): P
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for TikTok viral editing plans using JSON schema */
 export const generateTikTokEditPlan = async (topic: string, tone: string): Promise<EditPlanItem[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -390,7 +386,6 @@ export const generateTikTokEditPlan = async (topic: string, tone: string): Promi
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for B-Roll suggestions using JSON schema */
 export const generateBRollSuggestions = async (topic: string, duration: string): Promise<BRollSuggestion[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -415,7 +410,6 @@ export const generateBRollSuggestions = async (topic: string, duration: string):
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for music sync mapping using JSON schema */
 export const generateMusicSync = async (mood: string, duration: string): Promise<MusicSyncItem[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -440,7 +434,6 @@ export const generateMusicSync = async (mood: string, duration: string): Promise
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for planning zoom effects using JSON schema */
 export const generateZoomEffects = async (transcript: string): Promise<ZoomEffect[]> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -465,7 +458,6 @@ export const generateZoomEffects = async (transcript: string): Promise<ZoomEffec
   try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
 };
 
-/* Implementation for generating video frameworks/templates using JSON schema */
 export const generateVideoTemplate = async (type: string): Promise<VideoTemplate | null> => {
   const ai = getAIClient();
   const response = await ai.models.generateContent({
@@ -488,7 +480,6 @@ export const generateVideoTemplate = async (type: string): Promise<VideoTemplate
   try { return JSON.parse(response.text || 'null'); } catch (e) { return null; }
 };
 
-/* Implementation for full expert edit coordination using complex JSON schema */
 export const generateFullEditPlan = async (config: {
   topic: string;
   duration: string;

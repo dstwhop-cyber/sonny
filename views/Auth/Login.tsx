@@ -7,6 +7,44 @@ interface LoginProps {
   onViewChange: (view: ViewType) => void;
 }
 
+const SonnyLogoLarge = () => (
+  <svg viewBox="0 0 100 100" className="h-20 w-20 mx-auto mb-6" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="logoGradLarge" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#6366f1" />
+      </linearGradient>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+        <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+    <rect width="100" height="100" rx="30" fill="url(#logoGradLarge)" filter="url(#glow)" />
+    <text 
+      x="50%" 
+      y="68%" 
+      textAnchor="middle" 
+      fill="white" 
+      fontSize="54" 
+      fontWeight="900" 
+      fontFamily="Inter, sans-serif"
+      style={{ letterSpacing: '-0.05em' }}
+    >
+      S
+    </text>
+    <path 
+      d="M75 25 L85 25 M80 20 L80 30" 
+      stroke="white" 
+      strokeWidth="3" 
+      strokeLinecap="round" 
+      className="animate-pulse"
+    />
+  </svg>
+);
+
 const Login: React.FC<LoginProps> = ({ onViewChange }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,8 +90,8 @@ const Login: React.FC<LoginProps> = ({ onViewChange }) => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-10 shadow-xl space-y-8 animate-in fade-in zoom-in-95 duration-500">
         <div className="text-center space-y-2">
-          <img src="/logo.png" alt="Sonny" className="h-16 w-auto mx-auto mb-6 drop-shadow-[0_0_20px_rgba(59,130,246,0.2)]" />
-          <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Welcome Back</h1>
+          <SonnyLogoLarge />
+          <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter italic">Welcome Back</h1>
           <p className="text-slate-500 text-sm font-medium leading-relaxed">Sign in to your Creator Pro account</p>
         </div>
 
