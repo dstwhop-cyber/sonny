@@ -23,20 +23,20 @@ const Dashboard: React.FC = () => {
 
   // Static list of tools to ensure the dashboard never appears empty
   const tools = [
-    { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️', desc: 'Viral captions with deep reasoning.', category: 'Social' },
-    { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵', desc: 'Scroll-stopping video intros.', category: 'Video' },
-    { id: ViewType.SCRIPT_WRITER, label: 'Viral Scripts', icon: '📜', desc: 'Full-length short-form scripts.', category: 'Video' },
-    { id: ViewType.VIDEO_PLANNER, label: 'AI Planner', icon: '📋', desc: 'Scene-by-scene production maps.', category: 'Video' },
-    { id: ViewType.DESCRIPTION_GEN, label: 'Descriptions', icon: '📝', desc: 'SEO optimized post details.', category: 'SEO' },
-    { id: ViewType.CONTENT_IDEAS, label: 'Idea Lab', icon: '💡', desc: 'Strategic content brainstorming.', category: 'Strategy' },
-    { id: ViewType.BUSINESS_ADS, label: 'Ad Copy', icon: '📢', desc: 'High-conversion business ads.', category: 'Business' },
-    { id: ViewType.WHATSAPP_PROMO, label: 'WA Promos', icon: '💬', desc: 'Punchy sales messages for chat.', category: 'Business' },
-    { id: ViewType.IMAGE_LAB, label: 'AI Image Lab', icon: '🎨', desc: '4K visuals with Gemini Pro.', category: 'Media' },
-    { id: ViewType.VIDEO_STUDIO, label: 'Veo Studio', icon: '🎬', desc: 'Generate cinematic 720p clips.', category: 'Media' },
-    { id: ViewType.VIDEO_EDITOR, label: 'AI Video Editor', icon: '🎞️', desc: 'Transform images into motion.', category: 'Media' },
-    { id: ViewType.VOICE_LIVE, label: 'Voice Studio', icon: '🎙️', desc: 'High-fidelity AI narrations.', category: 'Audio' },
-    { id: ViewType.ANALYSIS, label: 'Media Analysis', icon: '🔍', desc: 'Intelligence reports for media.', category: 'AI' },
-    { id: ViewType.VIDEO_DIRECTOR, label: 'AI Director', icon: '🎥', desc: 'Expert coordination & roadmap.', category: 'Premium' },
+    { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️', desc: 'Viral captions with deep reasoning.', category: 'Social', pro: false },
+    { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵', desc: 'Scroll-stopping video intros.', category: 'Video', pro: false },
+    { id: ViewType.SCRIPT_WRITER, label: 'Viral Scripts', icon: '📜', desc: 'Full-length short-form scripts.', category: 'Video', pro: false },
+    { id: ViewType.VIDEO_PLANNER, label: 'AI Planner', icon: '📋', desc: 'Scene-by-scene production maps.', category: 'Video', pro: false },
+    { id: ViewType.DESCRIPTION_GEN, label: 'Descriptions', icon: '📝', desc: 'SEO optimized post details.', category: 'SEO', pro: false },
+    { id: ViewType.CONTENT_IDEAS, label: 'Idea Lab', icon: '💡', desc: 'Strategic content brainstorming.', category: 'Strategy', pro: false },
+    { id: ViewType.BUSINESS_ADS, label: 'Ad Copy', icon: '📢', desc: 'High-conversion business ads.', category: 'Business', pro: false },
+    { id: ViewType.WHATSAPP_PROMO, label: 'WA Promos', icon: '💬', desc: 'Punchy sales messages for chat.', category: 'Business', pro: false },
+    { id: ViewType.IMAGE_LAB, label: 'AI Image Lab', icon: '🎨', desc: '4K visuals with Gemini Pro.', category: 'Media', pro: true },
+    { id: ViewType.VIDEO_STUDIO, label: 'Veo Studio', icon: '🎬', desc: 'Generate cinematic 720p clips.', category: 'Media', pro: true },
+    { id: ViewType.VIDEO_EDITOR, label: 'AI Video Editor', icon: '🎞️', desc: 'Transform images into motion.', category: 'Media', pro: true },
+    { id: ViewType.VOICE_LIVE, label: 'Voice Studio', icon: '🎙️', desc: 'High-fidelity AI narrations.', category: 'Audio', pro: true },
+    { id: ViewType.ANALYSIS, label: 'Media Analysis', icon: '🔍', desc: 'Intelligence reports for media.', category: 'AI', pro: true },
+    { id: ViewType.VIDEO_DIRECTOR, label: 'AI Director', icon: '🎥', desc: 'Expert coordination & roadmap.', category: 'Premium', pro: true },
   ];
 
   const textProgress = usage?.isPro ? 100 : (usage ? (usage.textCount / limits.text) * 100 : 0);
@@ -94,13 +94,20 @@ const Dashboard: React.FC = () => {
               <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800/50 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform duration-500 shadow-inner ring-1 ring-slate-100 dark:ring-slate-700/50">
                 {tool.icon}
               </div>
-              <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mt-1">
-                {tool.category}
-              </span>
+              <div className="flex flex-col items-end">
+                <span className="text-[10px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mt-1">
+                  {tool.category}
+                </span>
+                {tool.pro && (
+                  <span className="mt-1 text-[8px] font-black bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                    PRO
+                  </span>
+                )}
+              </div>
             </div>
             
             <div className="space-y-2">
-              <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-500 transition-colors">
+              <h4 className="text-xl font-black text-slate-800 dark:text-slate-100 group-hover:text-blue-500 transition-colors uppercase tracking-tighter italic">
                 {tool.label}
               </h4>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">

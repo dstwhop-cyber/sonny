@@ -8,8 +8,11 @@ const DescriptionMaker: React.FC = () => {
   const [platform, setPlatform] = useState('YouTube');
   const [tone, setTone] = useState('Professional');
   const [audience, setAudience] = useState('General');
+  const [useThinking, setUseThinking] = useState(false);
+  const [useSearch, setUseSearch] = useState(false);
+  const [useMaps, setUseMaps] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<{ text: string; grounding: any[] } | null>(null);
   const [remaining, setRemaining] = useState(usageService.getRemaining('text'));
 
   useEffect(() => {
@@ -21,19 +24,40 @@ const DescriptionMaker: React.FC = () => {
   const handleGenerate = async () => {
     if (!usageService.canUse('text')) return;
     setLoading(true);
+    setResult(null);
     try {
-      const data = await generateDescription({ topic, platform, tone, audience });
+      let location = undefined;
+      if (useMaps && navigator.geolocation) {
+        try {
+          const pos = await new Promise<GeolocationPosition>((res, rej) => 
+            navigator.geolocation.getCurrentPosition(res, rej, { timeout: 5000 })
+          );
+          location = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        } catch (e) {}
+      }
+
+      const data = await generateDescription({ 
+        topic, platform, tone, audience,
+        useThinking, useSearch, useMaps,
+        location
+      });
       setResult(data);
       usageService.increment('text', 'descriptions');
     } catch (err: any) {
       console.error(err);
-      alert(err.message || "Failed to generate description.");
+      alert("Failed to generate description.");
     } finally {
       setLoading(false);
     }
   };
 
   const isLimitReached = remaining <= 0;
+
+  const groundingLinks = result?.grounding?.map(chunk => {
+    if (chunk.web) return { url: chunk.web.uri, title: chunk.web.title, type: 'web' };
+    if (chunk.maps) return { url: chunk.maps.uri, title: chunk.maps.title, type: 'maps' };
+    return null;
+  }).filter(Boolean) || [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500">
@@ -48,114 +72,74 @@ const DescriptionMaker: React.FC = () => {
             </span>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Platform</label>
-            <select 
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              disabled={isLimitReached}
-              className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100 disabled:opacity-50"
-            >
-              <option>YouTube</option>
-              <option>Pinterest</option>
-              <option>Blog Post</option>
-              <option>Podcast</option>
-              <option>E-commerce Product</option>
-              <option>Real Estate Listing</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Topic / Product</label>
-            <textarea 
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              disabled={isLimitReached}
-              placeholder="e.g. My new 2025 tech setup tour video"
-              className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none dark:text-slate-100 disabled:opacity-50 h-24"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Tone</label>
-              <select 
-                value={tone}
-                onChange={(e) => setTone(e.target.value)}
-                disabled={isLimitReached}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100 disabled:opacity-50"
-              >
-                <option>Professional</option>
-                <option>Enthusiastic</option>
-                <option>Informative</option>
-                <option>Salesy</option>
-                <option>Friendly</option>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Platform</label>
+              <select value={platform} onChange={(e) => setPlatform(e.target.value)} disabled={isLimitReached} className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100">
+                <option>YouTube</option><option>Pinterest</option><option>Blog Post</option><option>Podcast</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Audience</label>
-              <input 
-                value={audience}
-                onChange={(e) => setAudience(e.target.value)}
-                disabled={isLimitReached}
-                placeholder="Techies"
-                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100 disabled:opacity-50"
-              />
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-1">Topic</label>
+              <textarea value={topic} onChange={(e) => setTopic(e.target.value)} disabled={isLimitReached} className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl h-24 dark:text-slate-100" />
             </div>
           </div>
 
-          <div className="pt-4">
-            {isLimitReached ? (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl text-center space-y-3">
-                <p className="text-xs font-bold text-red-700 dark:text-red-400">Daily Limit Reached</p>
-                <button 
-                  onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'pricing' }))}
-                  className="w-full py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-black rounded-lg uppercase tracking-widest hover:scale-105 transition-transform"
-                >
-                  Go Pro
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={handleGenerate}
-                disabled={loading || !topic}
-                className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'}`}
-              >
-                {loading ? 'Drafting Content...' : 'Generate Description'}
-              </button>
-            )}
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Enhanced Tools</h4>
+            <div className="grid grid-cols-1 gap-2">
+              <label className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl cursor-pointer">
+                <span className="text-xs font-bold dark:text-slate-300">Deep Reasoning</span>
+                <input type="checkbox" checked={useThinking} onChange={e => setUseThinking(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+              </label>
+              <label className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl cursor-pointer">
+                <span className="text-xs font-bold dark:text-slate-300">Search Grounding</span>
+                <input type="checkbox" checked={useSearch} onChange={e => setUseSearch(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+              </label>
+              <label className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl cursor-pointer">
+                <span className="text-xs font-bold dark:text-slate-300">Place Context</span>
+                <input type="checkbox" checked={useMaps} onChange={e => setUseMaps(e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+              </label>
+            </div>
           </div>
+
+          <button onClick={handleGenerate} disabled={loading || !topic} className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${loading ? 'bg-slate-400' : 'bg-gradient-to-r from-indigo-600 to-blue-600'}`}>
+            {loading ? 'Drafting...' : 'Generate Description'}
+          </button>
         </div>
       </div>
 
       <div className="lg:col-span-2">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 h-full min-h-[500px] flex flex-col transition-colors">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 h-full min-h-[500px] flex flex-col transition-colors overflow-hidden">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/20">
             <h3 className="font-bold text-slate-800 dark:text-slate-100">Optimized Description</h3>
-            {result && (
-              <button 
-                onClick={() => navigator.clipboard.writeText(result)}
-                className="text-xs font-bold text-blue-600 hover:underline px-3 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40"
-              >
-                📋 Copy All
-              </button>
-            )}
+            {result && <button onClick={() => navigator.clipboard.writeText(result.text)} className="text-xs font-bold text-blue-600">Copy All</button>}
           </div>
           <div className="p-8 flex-1">
             {result ? (
-              <div className="p-6 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
-                <p className="text-lg text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-relaxed font-medium font-serif">
-                  {result}
-                </p>
+              <div className="space-y-8 animate-in fade-in duration-300">
+                <div className="p-8 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700">
+                  <p className="text-lg text-slate-800 dark:text-slate-100 whitespace-pre-wrap leading-relaxed font-medium font-serif">{result.text}</p>
+                </div>
+                {groundingLinks.length > 0 && (
+                  <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center">Sources Found</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {groundingLinks.map((link, idx) => (
+                        <a key={idx} href={link?.url} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-blue-400">
+                          <span className="text-xl mr-3">{link?.type === 'web' ? '🌐' : '📍'}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{link?.title || 'Source'}</span>
+                            <span className="text-[9px] text-slate-400 truncate">{link?.url}</span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-slate-400 dark:text-slate-600">
-                <div className="text-6xl">📄</div>
-                <div>
-                  <p className="font-medium text-slate-500 dark:text-slate-400">SEO-ready descriptions await.</p>
-                  <p className="text-sm">Great for YouTube, Blogs, and more.</p>
-                </div>
-              </div>
+              <div className="h-full flex flex-col items-center justify-center opacity-20"><div className="text-8xl">📄</div></div>
             )}
           </div>
         </div>

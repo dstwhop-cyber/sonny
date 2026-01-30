@@ -12,7 +12,19 @@ import {
   FullEditPlan 
 } from "../types";
 
-/* Correct initialization per guidelines. Using process.env.API_KEY directly. */
+/* Helper to select model and config based on enhanced tools */
+const getModelAndConfig = (config: { useThinking?: boolean; useSearch?: boolean; useMaps?: boolean }) => {
+  let model = 'gemini-3-flash-preview';
+  if (config.useMaps) model = 'gemini-2.5-flash';
+  else if (config.useThinking) model = 'gemini-3-pro-preview';
+
+  const tools: any[] = [];
+  if (config.useSearch) tools.push({ googleSearch: {} });
+  if (config.useMaps) tools.push({ googleMaps: {} });
+
+  return { model, tools };
+};
+
 const getAIClient = () => {
   return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
@@ -20,22 +32,25 @@ const getAIClient = () => {
 export const generateVideoPlan = async (config: {
   script: string;
   style: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }): Promise<VideoGenerationPlan | null> => {
   const ai = getAIClient();
+  const { model, tools } = getModelAndConfig(config);
+
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: `Convert this script into a detailed, machine-readable video generation plan: "${config.script}". Style: ${config.style}`,
+    model: model as any,
+    contents: `Convert this script into a detailed video generation plan: "${config.script}". Style: ${config.style}`,
     config: {
-      systemInstruction: `You are an AI video production specialist.
-Task: Split the script into short, engaging scenes for a video.
-Requirements:
-- Aspect ratio: 9:16 (TikTok/Reels optimized).
-- Style: ${config.style}.
-- Pacing: Fast, high engagement.
-- Each scene must include: scene ID, duration (seconds), narration, visuals, camera movement, background type, on-screen text, and audio notes.
-- Output ONLY valid JSON matching the provided schema.
-- Total duration MUST be calculated accurately based on the natural reading speed of the provided script content (assume ~140 words per minute). Do not restrict the duration to a fixed range; allow the plan to be as long or short as the script requires.`,
+      systemInstruction: `You are an AI video production specialist. Split the script into short, engaging scenes. Output ONLY valid JSON. Total duration MUST be calculated accurately based on natural reading speed (~140 wpm).`,
       responseMimeType: "application/json",
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      }),
       responseSchema: {
         type: Type.OBJECT,
         properties: {
@@ -76,15 +91,32 @@ export const generateDescription = async (config: {
   platform: string;
   tone: string;
   audience: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `You are a professional social media manager. Goal: Write a detailed, long-form description for a ${config.platform} post. Topic: ${config.topic}, Audience: ${config.audience}, Tone: ${config.tone}. Requirements: 100-200 words, Hook/Body/CTA structure, SEO tags.`;
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `You are a professional social media manager. Write a detailed description for a ${config.platform} post. Topic: ${config.topic}, Audience: ${config.audience}, Tone: ${config.tone}. Structure: Hook/Body/CTA. Max 200 words.`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model as any,
     contents: prompt,
+    config: {
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      })
+    }
   });
-  return response.text || '';
+
+  return {
+    text: response.text || '',
+    grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+  };
 };
 
 export const generateCaption = async (config: {
@@ -97,24 +129,16 @@ export const generateCaption = async (config: {
   location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `Write a high-performing Instagram caption for: ${config.topic}. Tone: ${config.tone}, Audience: ${config.audience}. Rules: Scroll-stopping hook, human story, clear CTA, max 60 words, 2 emojis, NO hashtags.`;
-
-  /* Corrected model names per guidelines for Maps and Thinking */
-  let modelName = 'gemini-3-flash-preview';
-  // Fix: Maps grounding is only supported in Gemini 2.5 series models.
-  if (config.useMaps) modelName = 'gemini-2.5-flash';
-  else if (config.useThinking) modelName = 'gemini-3-pro-preview';
-
-  const tools: any[] = [];
-  if (config.useSearch) tools.push({ googleSearch: {} });
-  if (config.useMaps) tools.push({ googleMaps: {} });
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `Write a high-performing Instagram caption for: ${config.topic}. Tone: ${config.tone}, Audience: ${config.audience}. Rules: Scroll-stopping hook, human story, clear CTA, max 60 words, NO hashtags.`;
 
   const response = await ai.models.generateContent({
-    model: modelName,
+    model: model as any,
     contents: prompt,
     config: {
-      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
       ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
       ...(config.useMaps && config.location && {
         toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
       })
@@ -130,28 +154,57 @@ export const generateCaption = async (config: {
 export const generateTikTokHooks = async (config: {
   topic: string;
   tone: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `Generate 3 viral TikTok hooks for: ${config.topic}. Tone: ${config.tone}. Max 12 words per hook. No emojis, no hashtags.`;
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `Generate 3 viral TikTok hooks for: ${config.topic}. Tone: ${config.tone}. Use real-world facts or trends where applicable.`;
+
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model as any,
     contents: prompt,
+    config: {
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      })
+    }
   });
-  return response.text || '';
+
+  return {
+    text: response.text || '',
+    grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+  };
 };
 
 export const generateSocialScripts = async (config: {
   topic: string;
   tone: string;
   duration: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
+  const { model, tools } = getModelAndConfig(config);
+
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: model as any,
     contents: `Generate 3 unique script variations for the topic: "${config.topic}". Tone: ${config.tone}. Target Duration: ${config.duration}.`,
     config: {
-      systemInstruction: `You are an AI social media script writer. Response must be valid JSON matching the variation schema. Scripts must fit the requested duration of ${config.duration} (strictly under 120s total). Include hook, body, CTA, and 3-5 hashtags.`,
+      systemInstruction: `You are an AI social media script writer. Response must be valid JSON. Include hook, body, CTA, and 3-5 hashtags.`,
       responseMimeType: "application/json",
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      }),
       responseSchema: {
         type: Type.ARRAY,
         items: {
@@ -168,42 +221,113 @@ export const generateSocialScripts = async (config: {
       }
     }
   });
-  try { return JSON.parse(response.text || '[]'); } catch (e) { return []; }
+
+  try {
+    const data = JSON.parse(response.text || '[]');
+    return {
+      variations: data,
+      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+    };
+  } catch (e) { return { variations: [], grounding: [] }; }
 };
 
 export const generateBusinessAd = async (config: {
   topic: string;
   audience: string;
   tone: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `Direct-response ad for: ${config.topic}. Audience: ${config.audience}. Tone: ${config.tone}. Focus on one main benefit and a strong CTA.`;
-  const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: prompt });
-  return response.text || '';
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `Direct-response ad for: ${config.topic}. Audience: ${config.audience}. Tone: ${config.tone}. Include specific data or social proof if found.`;
+  
+  const response = await ai.models.generateContent({ 
+    model: model as any, 
+    contents: prompt,
+    config: {
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      })
+    }
+  });
+
+  return {
+    text: response.text || '',
+    grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+  };
 };
 
 export const generateWhatsAppPromo = async (config: {
   topic: string;
   audience: string;
   tone: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `WhatsApp sales message for: ${config.topic}. Audience: ${config.audience}. Under 70 words, conversational tone, ends with a question.`;
-  const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: prompt });
-  return response.text || '';
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `WhatsApp sales message for: ${config.topic}. Audience: ${config.audience}. Under 70 words, conversational.`;
+  
+  const response = await ai.models.generateContent({ 
+    model: model as any, 
+    contents: prompt,
+    config: {
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      })
+    }
+  });
+
+  return {
+    text: response.text || '',
+    grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+  };
 };
 
 export const generateContentIdeas = async (config: {
   platform: string;
   topic: string;
   audience: string;
+  useThinking?: boolean;
+  useSearch?: boolean;
+  useMaps?: boolean;
+  location?: { latitude: number; longitude: number };
 }) => {
   const ai = getAIClient();
-  const prompt = `Generate exactly 5 content ideas for ${config.platform} about ${config.topic} for ${config.audience}. One line each.`;
-  const response = await ai.models.generateContent({ model: 'gemini-3-flash-preview', contents: prompt });
-  return response.text || '';
+  const { model, tools } = getModelAndConfig(config);
+  
+  const prompt = `Generate exactly 5 trending content ideas for ${config.platform} about ${config.topic}. Target audience: ${config.audience}.`;
+  
+  const response = await ai.models.generateContent({ 
+    model: model as any, 
+    contents: prompt,
+    config: {
+      ...(tools.length > 0 && { tools }),
+      ...(config.useThinking && { thinkingConfig: { thinkingBudget: 32768 } }),
+      ...(config.useMaps && config.location && {
+        toolConfig: { retrievalConfig: { latLng: { latitude: config.location.latitude, longitude: config.location.longitude } } }
+      })
+    }
+  });
+
+  return {
+    text: response.text || '',
+    grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
+  };
 };
 
+/* Rest of the original media functions remain unchanged as they are specialized */
 export const generateImage = async (params: {
   prompt: string;
   aspectRatio: string;
