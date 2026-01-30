@@ -52,7 +52,7 @@ const VideoPlanner: React.FC = () => {
           </div>
           
           <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-            Transform your raw script into a frame-by-frame production roadmap optimized for short-form retention.
+            Transform your raw script into a frame-by-frame production roadmap. <strong>Duration is automatically calculated</strong> based on the length of your script.
           </p>
 
           <div className="space-y-4">
@@ -62,7 +62,7 @@ const VideoPlanner: React.FC = () => {
                 value={script}
                 onChange={e => setScript(e.target.value)}
                 disabled={isLimitReached}
-                placeholder="Paste your 60-90 second script here..."
+                placeholder="Paste your script here. The plan will adjust to its natural length..."
                 className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl h-64 outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-100 transition-colors disabled:opacity-50 resize-none text-sm leading-relaxed"
               />
             </div>

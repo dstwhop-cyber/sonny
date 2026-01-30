@@ -34,7 +34,7 @@ Requirements:
 - Pacing: Fast, high engagement.
 - Each scene must include: scene ID, duration (seconds), narration, visuals, camera movement, background type, on-screen text, and audio notes.
 - Output ONLY valid JSON matching the provided schema.
-- Total duration must be between 15 and 120 seconds.`,
+- Total duration MUST be calculated accurately based on the natural reading speed of the provided script content (assume ~140 words per minute). Do not restrict the duration to a fixed range; allow the plan to be as long or short as the script requires.`,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
