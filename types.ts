@@ -1,6 +1,5 @@
 
 export enum ViewType {
-  // Fix: Added missing DASHBOARD property used in Login.tsx
   DASHBOARD = 'dashboard',
   CAPTION_GEN = 'caption_gen',
   DESCRIPTION_GEN = 'description_gen',
@@ -14,6 +13,7 @@ export enum ViewType {
   VOICE_LIVE = 'voice_live',
   ANALYSIS = 'analysis',
   PRICING = 'pricing',
+  SAVED_COLLECTION = 'saved_collection',
   // New Tool Views
   VIDEO_STUDIO = 'video_studio',
   VIDEO_EDITOR = 'video_editor',
@@ -32,6 +32,16 @@ export enum ViewType {
 
 export type PlanType = 'free' | 'pro' | 'agency';
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'none';
+
+export interface SavedItem {
+  id: string;
+  user_id: string;
+  type: string; // e.g., 'caption', 'hook', 'script'
+  topic: string;
+  content: string;
+  metadata?: any;
+  created_at: string;
+}
 
 export interface UserProfile {
   id: string;
@@ -100,7 +110,6 @@ export interface ScriptVariation {
   hashtags: string[];
 }
 
-/* Added missing types for video tools and expert automation */
 export interface EditDecision {
   action: 'cut' | 'keep';
   start_time: string;

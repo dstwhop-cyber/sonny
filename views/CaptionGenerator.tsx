@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { generateCaption } from '../services/geminiService';
 import { usageService } from '../services/usageService';
+import { collectionService } from '../services/collectionService';
 
 const CaptionGenerator: React.FC = () => {
   const [topic, setTopic] = useState('');
@@ -14,6 +15,10 @@ const CaptionGenerator: React.FC = () => {
   const [result, setResult] = useState<{ text: string; grounding: any[] } | null>(null);
   const [remaining, setRemaining] = useState(usageService.getRemaining('text'));
   const [copySuccess, setCopySuccess] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  const userProfile = usageService.getCurrentUser();
+  const isPro = userProfile?.plan === 'pro' || userProfile?.plan === 'agency';
 
   useEffect(() => {
     const updateUsage = () => setRemaining(usageService.getRemaining('text'));
@@ -26,6 +31,7 @@ const CaptionGenerator: React.FC = () => {
     setLoading(true);
     setResult(null);
     setCopySuccess(false);
+    setSaveStatus('idle');
     try {
       let location = undefined;
       if (useMaps && navigator.geolocation) {
@@ -59,6 +65,24 @@ const CaptionGenerator: React.FC = () => {
     navigator.clipboard.writeText(result.text);
     setCopySuccess(true);
     setTimeout(() => setCopySuccess(false), 2000);
+  };
+
+  const handleSave = async () => {
+    if (!result || !userProfile || !isPro) return;
+    setSaveStatus('saving');
+    try {
+      await collectionService.saveItem({
+        userId: userProfile.id,
+        type: 'caption',
+        topic: topic,
+        content: result.text,
+        metadata: { tone, audience, thinking: useThinking }
+      });
+      setSaveStatus('saved');
+    } catch (e) {
+      alert("Failed to save to collection.");
+      setSaveStatus('idle');
+    }
   };
 
   const isLimitReached = remaining <= 0;
@@ -177,7 +201,7 @@ const CaptionGenerator: React.FC = () => {
               <button 
                 onClick={handleGenerate}
                 disabled={loading || !topic}
-                className={`w-full py-4 rounded-xl font-black text-white shadow-xl transition-all active:scale-95 flex items-center justify-center space-x-2 ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/20'}`}
+                className={`w-full py-4 rounded-xl font-black text-white shadow-xl transition-all active:scale-95 flex items-center justify-center space-x-2 ${loading ? 'bg-slate-400' : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-blue-500/20'}`}
               >
                 {loading ? (
                   <>
@@ -218,6 +242,21 @@ const CaptionGenerator: React.FC = () => {
                   </p>
                   
                   <div className="absolute top-4 right-4 flex items-center space-x-2">
+                    {isPro && (
+                      <button 
+                        onClick={handleSave}
+                        disabled={saveStatus !== 'idle'}
+                        className={`p-3 rounded-xl shadow-md border transition-all flex items-center space-x-2 ${
+                          saveStatus === 'saved' ? 'bg-green-500 text-white border-green-600' : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600'
+                        }`}
+                      >
+                        <span>{saveStatus === 'saved' ? '✅' : '💾'}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest">
+                          {saveStatus === 'idle' ? 'Archive' : saveStatus === 'saving' ? 'Archiving...' : 'Saved'}
+                        </span>
+                      </button>
+                    )}
+
                     {copySuccess && (
                       <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 animate-in fade-in slide-in-from-right-2">
                         Copied!

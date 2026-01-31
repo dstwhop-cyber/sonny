@@ -31,6 +31,7 @@ import MusicSync from './views/MusicSync';
 import ZoomEffects from './views/ZoomEffects';
 import VideoTemplates from './views/VideoTemplates';
 import VideoDirector from './views/VideoDirector';
+import SavedCollections from './views/SavedCollections';
 
 const ConfigError: React.FC = () => (
   <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-10 text-center space-y-8">
@@ -171,6 +172,7 @@ const App: React.FC = () => {
       case ViewType.ZOOM_EFFECTS: return <ZoomEffects />;
       case ViewType.VIDEO_TEMPLATES: return <VideoTemplates />;
       case ViewType.VIDEO_DIRECTOR: return <VideoDirector />;
+      case ViewType.SAVED_COLLECTION: return <SavedCollections />;
       default: return <CaptionGenerator />;
     }
   };

@@ -74,6 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
 
   const navItems = [
     { id: ViewType.DASHBOARD, label: 'Overview', icon: '🏠' },
+    { id: ViewType.SAVED_COLLECTION, label: 'Saved Library', icon: '📂' },
     { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️' },
     { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵' },
     { id: ViewType.SCRIPT_WRITER, label: 'Viral Script Writer', icon: '📜' },
