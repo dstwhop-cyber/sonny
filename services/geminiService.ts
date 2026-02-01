@@ -9,7 +9,8 @@ import {
   MusicSyncItem, 
   ZoomEffect, 
   VideoTemplate, 
-  FullEditPlan 
+  FullEditPlan,
+  ScriptVariation
 } from "../types";
 
 /* Helper to select model and config based on enhanced tools */
@@ -26,7 +27,7 @@ const getModelAndConfig = (config: { useThinking?: boolean; useSearch?: boolean;
 };
 
 const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 };
 
 export const generateVideoPlan = async (config: {
@@ -190,7 +191,7 @@ export const generateSocialScripts = async (config: {
   useSearch?: boolean;
   useMaps?: boolean;
   location?: { latitude: number; longitude: number };
-}) => {
+}): Promise<{ variations: ScriptVariation[]; grounding: any[] }> => {
   const ai = getAIClient();
   const { model, tools } = getModelAndConfig(config);
 
@@ -327,7 +328,6 @@ export const generateContentIdeas = async (config: {
   };
 };
 
-/* Rest of the original media functions remain unchanged as they are specialized */
 export const generateImage = async (params: {
   prompt: string;
   aspectRatio: string;
@@ -348,7 +348,7 @@ export const generateImage = async (params: {
 };
 
 export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9' | '9:16' }) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
@@ -364,7 +364,7 @@ export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9
   }
 
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY as string}`);
   const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
@@ -375,7 +375,7 @@ export const editVideo = async (params: {
   endImage?: { data: string; mimeType: string };
   aspectRatio: '16:9' | '9:16' 
 }) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
@@ -398,7 +398,7 @@ export const editVideo = async (params: {
     operation = await ai.operations.getVideosOperation({ operation: operation });
   }
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY as string}`);
   const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
