@@ -14,6 +14,8 @@ export enum ViewType {
   ANALYSIS = 'analysis',
   PRICING = 'pricing',
   SAVED_COLLECTION = 'saved_collection',
+  TERMS = 'terms',
+  PRIVACY = 'privacy',
   // New Tool Views
   VIDEO_STUDIO = 'video_studio',
   VIDEO_EDITOR = 'video_editor',
@@ -38,7 +40,7 @@ declare global {
   }
 
   interface Window {
-    /* Fixed: Removed readonly modifier and moved AIStudio interface into declare global block to ensure matching modifiers and structural identity with host environment declarations */
+    /* Fixed: Removed readonly modifier to match the declaration in the host environment and fix identical modifier error */
     aistudio: AIStudio;
   }
   

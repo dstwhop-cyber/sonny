@@ -5,7 +5,6 @@ import { ViewType } from './types';
 import { authService } from './services/authService';
 import { usageService } from './services/usageService';
 import { supabase, isSupabaseConfigured } from './services/supabaseClient';
-// Fix: Added missing import for Dashboard view
 import Dashboard from './views/Dashboard';
 import CaptionGenerator from './views/CaptionGenerator';
 import DescriptionMaker from './views/DescriptionMaker';
@@ -32,6 +31,8 @@ import ZoomEffects from './views/ZoomEffects';
 import VideoTemplates from './views/VideoTemplates';
 import VideoDirector from './views/VideoDirector';
 import SavedCollections from './views/SavedCollections';
+import Terms from './views/Terms';
+import Privacy from './views/Privacy';
 
 const ConfigError: React.FC = () => (
   <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-10 text-center space-y-8">
@@ -62,7 +63,6 @@ const ConfigError: React.FC = () => (
 );
 
 const App: React.FC = () => {
-  // Changed default view to REGISTER so users see the sign-up form first
   const [activeView, setActiveView] = useState<ViewType>(ViewType.REGISTER);
   const [isAuth, setIsAuth] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +77,6 @@ const App: React.FC = () => {
     localStorage.setItem('sm_pro_theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
-  // Handle Supabase Auth State
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
       setIsLoading(false);
@@ -92,7 +91,6 @@ const App: React.FC = () => {
         
         if (authenticated) {
           await usageService.refreshProfile();
-          // Fix: Initial auth check now redirects to Dashboard instead of Caption Gen
           setActiveView(ViewType.DASHBOARD);
         }
       } catch (err) {
@@ -109,10 +107,8 @@ const App: React.FC = () => {
       
       if (event === 'SIGNED_IN') {
         await usageService.refreshProfile();
-        // Fix: Sign in event now correctly redirects to the Dashboard view
         setActiveView(ViewType.DASHBOARD);
       } else if (event === 'SIGNED_OUT') {
-        // When signed out, we show the registration page first as per user preference
         setActiveView(ViewType.REGISTER);
       }
     });
@@ -134,20 +130,17 @@ const App: React.FC = () => {
     );
   }
 
-  // If environment variables are missing, show the setup instructions
   if (!isSupabaseConfigured || !supabase) {
     return <ConfigError />;
   }
 
   const renderView = () => {
-    const publicViews = [ViewType.LOGIN, ViewType.REGISTER];
-    // If not authenticated, default to Register view as requested
+    const publicViews = [ViewType.LOGIN, ViewType.REGISTER, ViewType.TERMS, ViewType.PRIVACY];
     if (!isAuth && !publicViews.includes(activeView)) return <Register onViewChange={setActiveView} />;
 
     switch (activeView) {
       case ViewType.LOGIN: return <Login onViewChange={setActiveView} />;
       case ViewType.REGISTER: return <Register onViewChange={setActiveView} />;
-      // Fix: Added case for DASHBOARD in the view switch
       case ViewType.DASHBOARD: return <Dashboard />;
       case ViewType.PRICING: return <Pricing />;
       case ViewType.CAPTION_GEN: return <CaptionGenerator />;
@@ -159,7 +152,6 @@ const App: React.FC = () => {
       case ViewType.WHATSAPP_PROMO: return <WhatsAppPromo />;
       case ViewType.CONTENT_IDEAS: return <ContentIdeas />;
       case ViewType.IMAGE_LAB: return <ImageLab />;
-      // Fix: Changed ViewType.VOICE_STUDIO to ViewType.VOICE_LIVE to match types.ts
       case ViewType.VOICE_LIVE: return <VoiceStudio />;
       case ViewType.ANALYSIS: return <MediaAnalysis />;
       case ViewType.VIDEO_STUDIO: return <VideoStudio />;
@@ -173,6 +165,8 @@ const App: React.FC = () => {
       case ViewType.VIDEO_TEMPLATES: return <VideoTemplates />;
       case ViewType.VIDEO_DIRECTOR: return <VideoDirector />;
       case ViewType.SAVED_COLLECTION: return <SavedCollections />;
+      case ViewType.TERMS: return <Terms />;
+      case ViewType.PRIVACY: return <Privacy />;
       default: return <CaptionGenerator />;
     }
   };

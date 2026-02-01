@@ -189,23 +189,19 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
 
                     <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-4"></div>
 
-                    <a 
-                      href="https://ai.google.dev/terms" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => { onViewChange(ViewType.TERMS); setIsUserMenuOpen(false); }}
                       className="w-full flex items-center px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors"
                     >
                       <span className="mr-3 opacity-50">⚖️</span> Terms of Service
-                    </a>
+                    </button>
                     
-                    <a 
-                      href="https://policies.google.com/privacy" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                    <button 
+                      onClick={() => { onViewChange(ViewType.PRIVACY); setIsUserMenuOpen(false); }}
                       className="w-full flex items-center px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl transition-colors"
                     >
                       <span className="mr-3 opacity-50">🔒</span> Privacy Policy
-                    </a>
+                    </button>
 
                     <div className="h-px bg-slate-100 dark:bg-slate-800 my-2 mx-4"></div>
 
@@ -218,7 +214,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
                   </div>
 
                   <div className="bg-slate-50 dark:bg-slate-800/50 p-3 text-center">
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Sonny AI Studio v1.2.4</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Sonny AI Studio v1.2.5</p>
                   </div>
                 </div>
               )}
