@@ -30,16 +30,16 @@ export enum ViewType {
   REGISTER = 'register'
 }
 
-/* Define AIStudio interface to match the expected type from the host environment */
-export interface AIStudio {
-  hasSelectedApiKey: () => Promise<boolean>;
-  openSelectKey: () => Promise<void>;
-}
-
 declare global {
+  /* Define AIStudio interface to match the expected type from the host environment */
+  interface AIStudio {
+    hasSelectedApiKey: () => Promise<boolean>;
+    openSelectKey: () => Promise<void>;
+  }
+
   interface Window {
-    /* Use readonly modifier and AIStudio type to ensure identical declaration modifiers and types across all extensions */
-    readonly aistudio: AIStudio;
+    /* Fixed: Removed readonly modifier and moved AIStudio interface into declare global block to ensure matching modifiers and structural identity with host environment declarations */
+    aistudio: AIStudio;
   }
   
   /* Augment NodeJS namespace to provide types for process.env without redeclaring the block-scoped variable 'process' */

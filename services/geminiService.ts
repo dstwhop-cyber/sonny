@@ -26,8 +26,9 @@ const getModelAndConfig = (config: { useThinking?: boolean; useSearch?: boolean;
   return { model, tools };
 };
 
+// Fixed: Removed 'as string' cast to strictly adhere to initialization guidelines using process.env.API_KEY directly.
 const getAIClient = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
 
 export const generateVideoPlan = async (config: {
@@ -347,8 +348,9 @@ export const generateImage = async (params: {
   throw new Error("No image data returned from Gemini");
 };
 
+// Fixed: Removed 'as string' cast to follow strict initialization guidelines.
 export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9' | '9:16' }) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
@@ -364,18 +366,19 @@ export const generateVideo = async (params: { prompt: string; aspectRatio: '16:9
   }
 
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY as string}`);
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
   const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
 
+// Fixed: Removed 'as string' cast to follow strict initialization guidelines.
 export const editVideo = async (params: { 
   prompt: string; 
   startImage?: { data: string; mimeType: string }; 
   endImage?: { data: string; mimeType: string };
   aspectRatio: '16:9' | '9:16' 
 }) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
     prompt: params.prompt,
@@ -398,7 +401,7 @@ export const editVideo = async (params: {
     operation = await ai.operations.getVideosOperation({ operation: operation });
   }
   const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY as string}`);
+  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
   const blob = await response.blob();
   return URL.createObjectURL(blob);
 };
