@@ -209,7 +209,7 @@ export const generateVideoPlan = async (config: {
   }
 };
 
-/* Updated to fix TS error: added missing properties useThinking, useSearch, useMaps, and location */
+/* Updated: Ensure Gemini 2.5 is used for Maps grounding and adjust thinking budget accordingly */
 export const generateDescription = async (config: {
   topic: string;
   platform: string;
@@ -225,14 +225,19 @@ export const generateDescription = async (config: {
   if (config.useSearch) tools.push({ googleSearch: {} });
   if (config.useMaps) tools.push({ googleMaps: {} });
 
+  // Rule: Maps grounding is only supported in Gemini 2.5 series models.
+  const model = config.useMaps ? 'gemini-2.5-flash' : (config.useThinking ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview');
+  // Rule: Max thinking budget for 2.5 Flash is 24576.
+  const thinkingBudget = config.useThinking ? (config.useMaps ? 24576 : 32768) : undefined;
+
   const response = await ai.models.generateContent({
-    model: config.useThinking ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview',
+    model: model,
     contents: `Write a detailed description for a ${config.platform} post. Topic: ${config.topic}, Audience: ${config.audience}, Tone: ${config.tone}. Structure: Hook/Body/CTA. Max 200 words.`,
     config: {
       systemInstruction: "You are a professional social media manager.",
       tools: tools.length > 0 ? tools : undefined,
       toolConfig: config.location ? { retrievalConfig: { latLng: config.location } } : undefined,
-      thinkingConfig: config.useThinking ? { thinkingBudget: 32768 } : undefined
+      thinkingConfig: thinkingBudget ? { thinkingBudget } : undefined
     }
   });
   return processResponse(response);
@@ -252,7 +257,7 @@ export const generateCaption = async (config: {
   return processResponse(response);
 };
 
-/* Updated to fix TS error: added missing properties useThinking, useSearch, useMaps, and location */
+/* Updated: Ensure Gemini 2.5 is used for Maps grounding and adjust thinking budget accordingly */
 export const generateTikTokHooks = async (config: {
   topic: string;
   tone: string;
@@ -266,20 +271,25 @@ export const generateTikTokHooks = async (config: {
   if (config.useSearch) tools.push({ googleSearch: {} });
   if (config.useMaps) tools.push({ googleMaps: {} });
 
+  // Rule: Maps grounding is only supported in Gemini 2.5 series models.
+  const model = config.useMaps ? 'gemini-2.5-flash' : (config.useThinking ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview');
+  // Rule: Max thinking budget for 2.5 Flash is 24576.
+  const thinkingBudget = config.useThinking ? (config.useMaps ? 24576 : 32768) : undefined;
+
   const response = await ai.models.generateContent({
-    model: config.useThinking ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview',
+    model: model,
     contents: `Generate 3 viral TikTok hooks for: ${config.topic}. Tone: ${config.tone}. Focus on curiosity and high energy.`,
     config: {
       systemInstruction: "You are a viral content strategist.",
       tools: tools.length > 0 ? tools : undefined,
       toolConfig: config.location ? { retrievalConfig: { latLng: config.location } } : undefined,
-      thinkingConfig: config.useThinking ? { thinkingBudget: 32768 } : undefined
+      thinkingConfig: thinkingBudget ? { thinkingBudget } : undefined
     }
   });
   return processResponse(response);
 };
 
-/* Updated to fix TS error: added missing properties useThinking, useSearch, useMaps, and location */
+/* Updated: Handle Gemini 2.5 restriction for Maps grounding (disables JSON mode when Maps is active) */
 export const generateSocialScripts = async (config: {
   topic: string;
   tone: string;
@@ -294,16 +304,23 @@ export const generateSocialScripts = async (config: {
   if (config.useSearch) tools.push({ googleSearch: {} });
   if (config.useMaps) tools.push({ googleMaps: {} });
 
+  // Rule: Maps grounding is only supported in Gemini 2.5 series models.
+  const model = config.useMaps ? 'gemini-2.5-flash' : 'gemini-3-pro-preview';
+  // Rule: Max thinking budget for 2.5 Flash is 24576.
+  const thinkingBudget = config.useThinking ? (config.useMaps ? 24576 : 32768) : undefined;
+  // Rule: DO NOT set responseMimeType or responseSchema when using googleMaps.
+  const useJsonMode = !config.useMaps;
+
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview', // Always pro for complex multi-variation scripting
+    model: model,
     contents: `Generate 3 unique script variations for the topic: "${config.topic}". Tone: ${config.tone}. Target Duration: ${config.duration}.`,
     config: {
       systemInstruction: "You are an AI social media script writer.",
-      responseMimeType: "application/json",
-      responseSchema: ScriptVariationSchema,
+      responseMimeType: useJsonMode ? "application/json" : undefined,
+      responseSchema: useJsonMode ? ScriptVariationSchema : undefined,
       tools: tools.length > 0 ? tools : undefined,
       toolConfig: config.location ? { retrievalConfig: { latLng: config.location } } : undefined,
-      thinkingConfig: config.useThinking ? { thinkingBudget: 32768 } : undefined
+      thinkingConfig: thinkingBudget ? { thinkingBudget } : undefined
     }
   });
   
@@ -311,7 +328,11 @@ export const generateSocialScripts = async (config: {
     const variations = JSON.parse(response.text || "[]");
     return { variations, grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] };
   } catch (e) {
-    return { variations: [], grounding: [] };
+    // If not in JSON mode or parsing failed, return text as a single variation if available
+    return { 
+      variations: response.text ? [{ variation_title: "Generated Script", hook: "", body: response.text, cta: "", hashtags: [] }] : [], 
+      grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || [] 
+    };
   }
 };
 

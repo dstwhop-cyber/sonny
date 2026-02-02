@@ -18,6 +18,8 @@ export const usageService = {
     }
     const profile = await userRegistryService.getProfile(userId);
     cachedProfile = profile;
+    // Notify application that profile data is ready/updated
+    window.dispatchEvent(new Event('profileUpdated'));
     return profile;
   },
 
@@ -34,12 +36,14 @@ export const usageService = {
   getLimits: () => ({ text: 10, pro: 3 }),
 
   canUse: (type: 'text' | 'pro'): boolean => {
-    if (!cachedProfile || cachedProfile.isBanned) return false;
+    // If profile is still loading, allow use to avoid locking inputs prematurely
+    if (!cachedProfile) return true;
+    if (cachedProfile.isBanned) return false;
     if (cachedProfile.plan !== 'free') return true; 
 
     const limits = usageService.getLimits();
-    if (type === 'text') return cachedProfile.usage.textCount < limits.text;
-    if (type === 'pro') return cachedProfile.usage.proCount < limits.pro;
+    if (type === 'text') return (cachedProfile.usage.textCount || 0) < limits.text;
+    if (type === 'pro') return (cachedProfile.usage.proCount || 0) < limits.pro;
     
     return false;
   },
@@ -50,8 +54,8 @@ export const usageService = {
     if (!userId || !cachedProfile) return;
 
     const newStats = { ...cachedProfile.usage.stats };
-    if (feature && (newStats as any)[feature] !== undefined) {
-      (newStats as any)[feature] += 1;
+    if (feature) {
+      (newStats as any)[feature] = ((newStats as any)[feature] || 0) + 1;
     }
 
     await userRegistryService.updateUsage(userId, type, newStats);
@@ -59,9 +63,12 @@ export const usageService = {
   },
 
   getRemaining: (type: 'text' | 'pro'): number => {
-    if (!cachedProfile) return 0;
-    if (cachedProfile.plan !== 'free') return Infinity;
     const limits = usageService.getLimits();
-    return Math.max(0, limits[type] - (type === 'text' ? cachedProfile.usage.textCount : cachedProfile.usage.proCount));
+    // If no profile yet, show the full limit instead of 0 to avoid red "Locked" UI
+    if (!cachedProfile) return limits[type];
+    if (cachedProfile.plan !== 'free') return Infinity;
+    
+    const count = type === 'text' ? (cachedProfile.usage.textCount || 0) : (cachedProfile.usage.proCount || 0);
+    return Math.max(0, limits[type] - count);
   }
 };

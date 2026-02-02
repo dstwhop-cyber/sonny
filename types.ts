@@ -40,8 +40,8 @@ declare global {
   }
 
   interface Window {
-    /* Modified: removed readonly modifier to ensure identical modifiers across all declarations of 'aistudio' on the Window interface */
-    aistudio: AIStudio;
+    /* Modified: Added readonly modifier to ensure identical modifiers across all declarations of 'aistudio' on the Window interface */
+    readonly aistudio: AIStudio;
   }
   
   /* Augment NodeJS namespace to provide types for process.env without redeclaring the block-scoped variable 'process' */

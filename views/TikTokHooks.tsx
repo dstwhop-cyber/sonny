@@ -16,7 +16,11 @@ const TikTokHooks: React.FC = () => {
   useEffect(() => {
     const updateUsage = () => setRemaining(usageService.getRemaining('text'));
     window.addEventListener('usageUpdated', updateUsage);
-    return () => window.removeEventListener('usageUpdated', updateUsage);
+    window.addEventListener('profileUpdated', updateUsage);
+    return () => {
+      window.removeEventListener('usageUpdated', updateUsage);
+      window.removeEventListener('profileUpdated', updateUsage);
+    };
   }, []);
 
   const handleGenerate = async () => {
@@ -51,7 +55,7 @@ const TikTokHooks: React.FC = () => {
     }
   };
 
-  const isLimitReached = remaining <= 0;
+  const isLimitReached = remaining <= 0 && remaining !== Infinity;
 
   const groundingLinks = result?.grounding?.map(chunk => {
     if (chunk.web) return { url: chunk.web.uri, title: chunk.web.title, type: 'web' };
@@ -68,7 +72,7 @@ const TikTokHooks: React.FC = () => {
               <span className="mr-2">🎵</span> Hook Strategy
             </h3>
             <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter ${remaining > 0 ? 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-400' : 'bg-red-100 text-red-600'}`}>
-              {remaining} Uses Left
+              {remaining === Infinity ? 'Unlimited' : `${remaining} Uses Left`}
             </span>
           </div>
 
@@ -138,7 +142,7 @@ const TikTokHooks: React.FC = () => {
           
           <button 
             onClick={handleGenerate}
-            disabled={loading || !topic}
+            disabled={loading || !topic || isLimitReached}
             className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${loading ? 'bg-slate-400' : 'bg-gradient-to-r from-cyan-500 to-pink-500'}`}
           >
             {loading ? 'Analyzing...' : 'Generate Viral Hooks'}

@@ -21,7 +21,11 @@ const CaptionGenerator: React.FC = () => {
   useEffect(() => {
     const updateUsage = () => setRemaining(usageService.getRemaining('text'));
     window.addEventListener('usageUpdated', updateUsage);
-    return () => window.removeEventListener('usageUpdated', updateUsage);
+    window.addEventListener('profileUpdated', updateUsage);
+    return () => {
+      window.removeEventListener('usageUpdated', updateUsage);
+      window.removeEventListener('profileUpdated', updateUsage);
+    };
   }, []);
 
   const handleGenerate = async () => {
@@ -67,7 +71,7 @@ const CaptionGenerator: React.FC = () => {
     }
   };
 
-  const isLimitReached = remaining <= 0;
+  const isLimitReached = remaining <= 0 && remaining !== Infinity;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in slide-in-from-bottom-4 duration-500">
@@ -78,7 +82,7 @@ const CaptionGenerator: React.FC = () => {
               <span className="mr-2">✨</span> HF Post Writer
             </h3>
             <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter ${remaining > 0 ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-red-100 text-red-600'}`}>
-              {remaining} Uses Left
+              {remaining === Infinity ? 'Unlimited' : `${remaining} Uses Left`}
             </span>
           </div>
 

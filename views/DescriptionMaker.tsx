@@ -18,7 +18,11 @@ const DescriptionMaker: React.FC = () => {
   useEffect(() => {
     const updateUsage = () => setRemaining(usageService.getRemaining('text'));
     window.addEventListener('usageUpdated', updateUsage);
-    return () => window.removeEventListener('usageUpdated', updateUsage);
+    window.addEventListener('profileUpdated', updateUsage);
+    return () => {
+      window.removeEventListener('usageUpdated', updateUsage);
+      window.removeEventListener('profileUpdated', updateUsage);
+    };
   }, []);
 
   const handleGenerate = async () => {
@@ -51,7 +55,7 @@ const DescriptionMaker: React.FC = () => {
     }
   };
 
-  const isLimitReached = remaining <= 0;
+  const isLimitReached = remaining <= 0 && remaining !== Infinity;
 
   const groundingLinks = result?.grounding?.map(chunk => {
     if (chunk.web) return { url: chunk.web.uri, title: chunk.web.title, type: 'web' };
@@ -68,7 +72,7 @@ const DescriptionMaker: React.FC = () => {
               <span className="mr-2">📜</span> Content Specs
             </h3>
             <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter ${remaining > 0 ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-red-100 text-red-600'}`}>
-              {remaining} Uses Left
+              {remaining === Infinity ? 'Unlimited' : `${remaining} Uses Left`}
             </span>
           </div>
 
