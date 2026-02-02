@@ -1,6 +1,6 @@
 
 // Use correct Google GenAI SDK imports
-import { GoogleGenAI, Type, Modality } from "@google/genai";
+import { GoogleGenAI, Type, Modality, GenerateContentResponse } from "@google/genai";
 import { 
   VideoGenerationPlan, 
   EditDecision, 
@@ -23,7 +23,7 @@ const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 /**
  * Helper to extract text and grounding from a generateContent response
  */
-const processResponse = (response: any) => {
+const processResponse = (response: GenerateContentResponse) => {
   return {
     text: response.text || "",
     grounding: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
@@ -367,9 +367,12 @@ export const generateImage = async (params: {
     config: { imageConfig: { aspectRatio: "1:1" } }
   });
 
-  for (const part of response.candidates[0].content.parts) {
-    if (part.inlineData) {
-      return `data:image/png;base64,${part.inlineData.data}`;
+  const candidates = response.candidates;
+  if (candidates && candidates.length > 0 && candidates[0].content && candidates[0].content.parts) {
+    for (const part of candidates[0].content.parts) {
+      if (part.inlineData) {
+        return `data:image/png;base64,${part.inlineData.data}`;
+      }
     }
   }
   throw new Error("No image data returned from Gemini.");
