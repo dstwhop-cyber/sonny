@@ -72,30 +72,68 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
     };
   }, []);
 
-  const navItems = [
+  const coreItems = [
     { id: ViewType.DASHBOARD, label: 'Overview', icon: '🏠' },
     { id: ViewType.SAVED_COLLECTION, label: 'Saved Library', icon: '📂' },
+  ];
+
+  const contentItems = [
     { id: ViewType.CAPTION_GEN, label: 'Insta Captions', icon: '✍️' },
     { id: ViewType.TIKTOK_HOOKS, label: 'TikTok Hooks', icon: '🎵' },
     { id: ViewType.SCRIPT_WRITER, label: 'Viral Script Writer', icon: '📜' },
-    { id: ViewType.VIDEO_PLANNER, label: 'AI Script Planner', icon: '📋' },
     { id: ViewType.DESCRIPTION_GEN, label: 'Post Descriptions', icon: '📝' },
     { id: ViewType.CONTENT_IDEAS, label: 'Idea Lab', icon: '💡' },
     { id: ViewType.BUSINESS_ADS, label: 'Ad Copywriter', icon: '📢' },
     { id: ViewType.WHATSAPP_PROMO, label: 'WhatsApp Promo', icon: '💬' },
+  ];
+
+  const mediaItems = [
     { id: ViewType.IMAGE_LAB, label: 'AI Image Lab', icon: '🎨' },
     { id: ViewType.VIDEO_STUDIO, label: 'Veo Studio', icon: '🎬' },
-    { id: ViewType.VIDEO_EDITOR, label: 'AI Video Editor', icon: '🎞️' },
+    { id: ViewType.VIDEO_EDITOR, label: 'Generative Editor', icon: '🎞️' },
+    { id: ViewType.TIMELINE_EDITOR, label: 'Timeline Editor', icon: '⏲️' },
     { id: ViewType.VOICE_LIVE, label: 'Voice Studio', icon: '🎙️' },
     { id: ViewType.ANALYSIS, label: 'Media Analysis', icon: '🔍' },
+  ];
+
+  const toolkitItems = [
     { id: ViewType.VIDEO_DIRECTOR, label: 'AI Video Director', icon: '🎥' },
-    { id: ViewType.PRICING, label: 'Pricing & Pro', icon: '💎' },
+    { id: ViewType.VIDEO_PLANNER, label: 'AI Script Planner', icon: '📋' },
+    { id: ViewType.SMART_CUT, label: 'Smart Cut AI', icon: '✂️' },
+    { id: ViewType.SHORT_CAPTIONS, label: 'Viral Subtitles', icon: '🔥' },
+    { id: ViewType.TIKTOK_EDIT_PLAN, label: 'Editing Plan', icon: '📐' },
+    { id: ViewType.B_ROLL_GEN, label: 'B-Roll Architect', icon: '📽️' },
+    { id: ViewType.MUSIC_SYNC, label: 'Music Syncer', icon: '🎹' },
+    { id: ViewType.ZOOM_EFFECTS, label: 'Zoom Dynamics', icon: '🔍' },
+    { id: ViewType.VIDEO_TEMPLATES, label: 'Preset Templates', icon: '🔖' },
   ];
 
   const handleNavClick = (id: ViewType) => {
     onViewChange(id);
     setIsMobileMenuOpen(false);
   };
+
+  const NavGroup = ({ title, items }: { title: string, items: any[] }) => (
+    <div className="py-2">
+      <p className="px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2">{title}</p>
+      <div className="space-y-0.5">
+        {items.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => handleNavClick(item.id)}
+            className={`w-full flex items-center px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              activeView === item.id 
+                ? 'bg-blue-600 text-white shadow-md' 
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <span className="mr-3 text-base">{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   const SidebarContent = () => (
     <>
@@ -109,19 +147,25 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
         </div>
         <button onClick={() => setIsMobileMenuOpen(false)} className="lg:hidden text-slate-400 hover:text-white">✕</button>
       </div>
-      <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto scrollbar-hide">
-        {navItems.map((item) => (
+      <nav className="flex-1 px-3 py-2 space-y-2 overflow-y-auto scrollbar-hide">
+        <NavGroup title="Main" items={coreItems} />
+        <NavGroup title="Core Content" items={contentItems} />
+        <NavGroup title="Media Engine" items={mediaItems} />
+        <NavGroup title="Production Toolkit" items={toolkitItems} />
+        
+        <div className="pt-4 border-t border-slate-800">
           <button
-            key={item.id}
-            onClick={() => handleNavClick(item.id)}
-            className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-              activeView === item.id ? 'bg-blue-600 text-white shadow-lg' : 'text-slate-300 hover:bg-slate-800'
+            onClick={() => handleNavClick(ViewType.PRICING)}
+            className={`w-full flex items-center px-4 py-3 text-xs font-black rounded-xl transition-all ${
+              activeView === ViewType.PRICING 
+                ? 'bg-indigo-600 text-white shadow-lg' 
+                : 'bg-indigo-900/20 text-indigo-400 hover:bg-indigo-900/40 border border-indigo-500/20'
             }`}
           >
-            <span className="mr-3 text-lg">{item.icon}</span>
-            {item.label}
+            <span className="mr-3 text-base">💎</span>
+            Pricing & Pro
           </button>
-        ))}
+        </div>
       </nav>
       <div className="p-4 flex flex-col space-y-3 border-t border-slate-800">
         {user && (
@@ -148,7 +192,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, onViewChange, isD
         <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 shadow-sm z-30 transition-colors">
           <div className="flex items-center">
             <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden mr-4 p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"><span className="text-xl">☰</span></button>
-            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 truncate tracking-tight">{navItems.find(i => i.id === activeView)?.label || 'Creator Studio'}</h2>
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 truncate tracking-tight">Creator Studio</h2>
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
              {user?.plan === 'pro' && <span className="hidden md:inline text-[9px] font-black bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2 py-1 rounded-md uppercase tracking-widest shadow-lg shadow-blue-500/20">Master Creator</span>}

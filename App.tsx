@@ -22,6 +22,7 @@ import Login from './views/Auth/Login';
 import Register from './views/Auth/Register';
 import VideoStudio from './views/VideoStudio';
 import VideoEditor from './views/VideoEditor';
+import VideoStudioPro from './views/VideoStudioPro';
 import SmartCut from './views/SmartCut';
 import ShortCaptions from './views/ShortCaptions';
 import TikTokEditPlan from './views/TikTokEditPlan';
@@ -156,6 +157,7 @@ const App: React.FC = () => {
       case ViewType.ANALYSIS: return <MediaAnalysis />;
       case ViewType.VIDEO_STUDIO: return <VideoStudio />;
       case ViewType.VIDEO_EDITOR: return <VideoEditor />;
+      case ViewType.TIMELINE_EDITOR: return <VideoStudioPro />;
       case ViewType.SMART_CUT: return <SmartCut />;
       case ViewType.SHORT_CAPTIONS: return <ShortCaptions />;
       case ViewType.TIKTOK_EDIT_PLAN: return <TikTokEditPlan />;

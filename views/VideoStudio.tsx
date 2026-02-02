@@ -12,8 +12,14 @@ const VideoStudio: React.FC = () => {
   const user = usageService.getCurrentUser();
   const isPro = user?.plan === 'pro' || user?.plan === 'agency';
 
+  // Fix: Added mandatory API Key selection check for Veo models as per guidelines.
   const handleGenerate = async () => {
     if (!isPro) return;
+
+    if (!(await window.aistudio.hasSelectedApiKey())) {
+      await window.aistudio.openSelectKey();
+      // Proceed assuming success per race condition guideline.
+    }
 
     setLoading(true);
     setStatus('Requesting HF Inference Node...');
@@ -23,6 +29,9 @@ const VideoStudio: React.FC = () => {
       usageService.increment('pro', 'videos');
     } catch (err: any) {
       console.error(err);
+      if (err.message?.includes("Requested entity was not found.")) {
+        await window.aistudio.openSelectKey();
+      }
       alert(err.message || "Video generation failed. Text-to-Video inference is highly resource intensive.");
     } finally {
       setLoading(false);

@@ -19,6 +19,7 @@ export enum ViewType {
   // New Tool Views
   VIDEO_STUDIO = 'video_studio',
   VIDEO_EDITOR = 'video_editor',
+  TIMELINE_EDITOR = 'timeline_editor',
   SMART_CUT = 'smart_cut',
   SHORT_CAPTIONS = 'short_captions',
   TIKTOK_EDIT_PLAN = 'tiktok_edit_plan',
@@ -40,7 +41,7 @@ declare global {
   }
 
   interface Window {
-    /* Modified: Added readonly modifier to ensure identical modifiers across all declarations of 'aistudio' on the Window interface */
+    // Add readonly modifier to match the property's existing definition in the global scope
     readonly aistudio: AIStudio;
   }
   

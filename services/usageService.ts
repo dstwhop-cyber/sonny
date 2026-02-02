@@ -33,10 +33,10 @@ export const usageService = {
     };
   },
 
-  getLimits: () => ({ text: 10, pro: 3 }),
+  // Increased limits for smoother user onboarding
+  getLimits: () => ({ text: 50, pro: 10 }),
 
   canUse: (type: 'text' | 'pro'): boolean => {
-    // If profile is still loading, allow use to avoid locking inputs prematurely
     if (!cachedProfile) return true;
     if (cachedProfile.isBanned) return false;
     if (cachedProfile.plan !== 'free') return true; 
@@ -64,7 +64,6 @@ export const usageService = {
 
   getRemaining: (type: 'text' | 'pro'): number => {
     const limits = usageService.getLimits();
-    // If no profile yet, show the full limit instead of 0 to avoid red "Locked" UI
     if (!cachedProfile) return limits[type];
     if (cachedProfile.plan !== 'free') return Infinity;
     
