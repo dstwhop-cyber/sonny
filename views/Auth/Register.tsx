@@ -125,6 +125,13 @@ const Register: React.FC<RegisterProps> = ({ onViewChange }) => {
           >
             {isLoading ? 'Creating Account...' : 'Create Profile'}
           </button>
+          
+          <p className="text-[10px] text-slate-400 text-center font-medium leading-relaxed px-4">
+            By clicking Create Profile, you agree to our{' '}
+            <button type="button" onClick={() => onViewChange(ViewType.TERMS)} className="text-blue-500 font-bold hover:underline">Terms of Service</button>
+            {' '}and{' '}
+            <button type="button" onClick={() => onViewChange(ViewType.PRIVACY)} className="text-blue-500 font-bold hover:underline">Privacy Policy</button>.
+          </p>
         </form>
 
         <div className="pt-4 text-center">

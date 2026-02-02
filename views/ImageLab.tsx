@@ -17,26 +17,17 @@ const ImageLab: React.FC = () => {
     return () => window.removeEventListener('usageUpdated', updateUsage);
   }, []);
 
-  // Fix: Added mandatory API Key selection check for Gemini 3 Pro models as per guidelines.
   const handleGenerate = async () => {
     if (!usageService.canUse('pro')) return;
 
-    if (!(await (window as any).aistudio.hasSelectedApiKey())) {
-      await (window as any).aistudio.openSelectKey();
-      // Proceed assuming success per race condition guideline.
-    }
-
     setLoading(true);
     try {
-      const url = await generateImage({ prompt, aspectRatio, imageSize });
+      const url = await generateImage({ prompt });
       setResult(url);
       usageService.increment('pro');
     } catch (err: any) {
       console.error(err);
-      if (err.message?.includes("Requested entity was not found.")) {
-        await (window as any).aistudio.openSelectKey();
-      }
-      alert(err.message || "Image generation failed.");
+      alert(err.message || "Image generation failed. Ensure your Hugging Face API key is valid.");
     } finally {
       setLoading(false);
     }
@@ -49,71 +40,47 @@ const ImageLab: React.FC = () => {
       <div className="lg:col-span-1 space-y-6">
         <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-6 transition-colors">
           <div className="flex justify-between items-center">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Image Studio</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tighter">FLUX Studio</h3>
             <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter ${remaining > 0 ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400' : 'bg-red-100 text-red-600'}`}>
-              {remaining} Trials Left
+              {remaining} HF Credits
             </span>
           </div>
           
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Creative Prompt</label>
+            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Motion-Ready Visual</label>
             <textarea 
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
               disabled={isLimitReached}
-              placeholder="A futuristic cybernetic garden at twilight, cinematic lighting..."
-              className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl h-32 outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-100 transition-colors disabled:opacity-50"
+              placeholder="High-fidelity cinematic visual description..."
+              className="w-full p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl h-32 outline-none focus:ring-2 focus:ring-blue-500 dark:text-slate-100 transition-colors disabled:opacity-50 text-sm"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Aspect Ratio</label>
-              <select 
-                value={aspectRatio}
-                onChange={e => setAspectRatio(e.target.value)}
-                disabled={isLimitReached}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100 disabled:opacity-50"
-              >
-                <option>1:1</option>
-                <option>4:3</option>
-                <option>16:9</option>
-                <option>9:16</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Resolution</label>
-              <select 
-                value={imageSize}
-                onChange={e => setImageSize(e.target.value)}
-                disabled={isLimitReached}
-                className="w-full p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl outline-none dark:text-slate-100 disabled:opacity-50"
-              >
-                <option>1K</option>
-                <option>2K</option>
-                <option>4K</option>
-              </select>
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+             <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Engine</p>
+               <p className="text-xs font-bold text-slate-800 dark:text-slate-200">HF Black Forest Labs / FLUX.1</p>
+             </div>
           </div>
 
           {isLimitReached ? (
             <div className="p-6 bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-2xl text-center space-y-4">
-              <p className="text-sm font-bold text-purple-800 dark:text-purple-300">Trials Exhausted</p>
-              <p className="text-xs text-purple-700 dark:text-purple-400 leading-relaxed">High-fidelity 4K image generation is a Pro feature. Upgrade to continue creating.</p>
+              <p className="text-sm font-bold text-purple-800 dark:text-purple-300">Credits Exhausted</p>
               <button 
                 onClick={() => window.dispatchEvent(new CustomEvent('changeView', { detail: 'pricing' }))}
-                className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg hover:bg-purple-700 transition-colors active:scale-95"
+                className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold shadow-lg"
               >
-                Get Creator Pro
+                Top up Studio
               </button>
             </div>
           ) : (
             <button 
               onClick={handleGenerate}
               disabled={loading || !prompt}
-              className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all ${loading ? 'bg-slate-400' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`}
+              className={`w-full py-4 rounded-2xl font-black text-white shadow-lg transition-all uppercase tracking-widest ${loading ? 'bg-slate-400' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}
             >
-              {loading ? '🎨 Painting Canvas...' : 'Generate 4K Visual'}
+              {loading ? '🎨 Drawing...' : 'Synthesize Visual'}
             </button>
           )}
         </div>
@@ -122,23 +89,23 @@ const ImageLab: React.FC = () => {
       <div className="lg:col-span-2">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-center min-h-[500px] transition-colors overflow-hidden">
           {result ? (
-            <div className="relative group w-full h-full flex items-center justify-center">
+            <div className="relative group w-full h-full flex flex-col items-center">
               <img src={result} className="max-w-full max-h-[600px] rounded-2xl shadow-2xl object-contain" alt="Generated visual" />
-              <div className="absolute top-4 right-4 space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mt-6">
                 <a 
                   href={result} 
-                  download="generated-ai-image.png"
-                  className="bg-white dark:bg-slate-800 p-3 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-800 dark:text-slate-100"
+                  download="hf-generated-image.png"
+                  className="bg-slate-900 dark:bg-slate-100 px-8 py-3 rounded-xl shadow-lg text-xs font-black uppercase tracking-widest text-white dark:text-slate-900"
                 >
-                  📥 Download
+                  📥 Download Master
                 </a>
               </div>
             </div>
           ) : (
-            <div className="text-center text-slate-300 dark:text-slate-700">
+            <div className="text-center text-slate-300 dark:text-slate-700 space-y-4">
               <span className="text-8xl mb-4 block">📸</span>
-              <p className="text-lg font-medium">Your masterpiece will appear here.</p>
-              <p className="text-sm">Powered by Gemini Pro Image Engine.</p>
+              <p className="text-lg font-black uppercase tracking-tighter">Studio Canvas Empty</p>
+              <p className="text-xs">Powered by Hugging Face FLUX Architecture.</p>
             </div>
           )}
         </div>

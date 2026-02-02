@@ -40,7 +40,7 @@ declare global {
   }
 
   interface Window {
-    /* Fixed: Removed readonly modifier to match the declaration in the host environment and fix identical modifier error */
+    /* Removed readonly modifier to fix identical modifier error as it must match existing declarations */
     aistudio: AIStudio;
   }
   
