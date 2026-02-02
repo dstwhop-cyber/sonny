@@ -13,18 +13,18 @@ export const userRegistryService = {
 
     if (error || !data) return null;
 
-    // Map DB fields to UserProfile type
+    // Map DB fields to UserProfile type with robust fallbacks
     return {
       id: data.id,
       email: data.email,
-      plan: data.plan,
-      subStatus: data.sub_status,
+      plan: data.plan || 'free', // Fallback to free if null
+      subStatus: data.sub_status || 'none',
       isBanned: data.is_banned || false,
       createdAt: data.created_at,
       usage: {
-        textCount: data.usage_text,
-        proCount: data.usage_pro,
-        stats: data.stats
+        textCount: data.usage_text || 0, // Fallback to 0 if null
+        proCount: data.usage_pro || 0,   // Fallback to 0 if null
+        stats: data.stats || {}          // Fallback to empty object if null
       },
       passwordHash: '' // Not stored in public table
     };
@@ -41,8 +41,8 @@ export const userRegistryService = {
     return data.map((d: any) => ({
       id: d.id,
       email: d.email,
-      plan: d.plan,
-      subStatus: d.sub_status,
+      plan: d.plan || 'free',
+      subStatus: d.sub_status || 'none',
       isBanned: d.is_banned || false,
       createdAt: new Date(d.created_at).toLocaleDateString(),
       usage: {
@@ -60,12 +60,20 @@ export const userRegistryService = {
     return [];
   },
 
-  // Create initial profile for a new user
+  // Create initial profile for a new user with explicit defaults
   createProfile: async (userId: string, email: string) => {
     const { error } = await supabase
       .from('profiles')
       .insert([
-        { id: userId, email }
+        { 
+          id: userId, 
+          email,
+          plan: 'free',
+          usage_text: 0,
+          usage_pro: 0,
+          stats: {},
+          sub_status: 'none'
+        }
       ]);
     
     if (error) console.error('Error creating profile:', error);
@@ -78,9 +86,13 @@ export const userRegistryService = {
     const profile = await userRegistryService.getProfile(userId);
     if (!profile) return;
 
+    // Use current count or default to 0 if somehow null
+    const currentCount = type === 'text' ? profile.usage.textCount : profile.usage.proCount;
+    const nextCount = (currentCount || 0) + 1;
+
     const updates = {
-      [field]: (profile.usage as any)[type + 'Count'] + 1,
-      stats: { ...profile.usage.stats, ...stats }
+      [field]: nextCount,
+      stats: { ...(profile.usage.stats || {}), ...stats }
     };
 
     await supabase
